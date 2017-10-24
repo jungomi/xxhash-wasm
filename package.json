@@ -7,6 +7,23 @@
   "license": "MIT",
   "scripts": {
     "compile": "wat2wasm xxhash.wat -o xxhash.wasm",
-    "compile-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm"
+    "compile-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm",
+    "fix": "eslint . --fix",
+    "lint": "eslint .",
+    "test": "jest",
+    "test-update": "jest --updateSnapshot",
+    "test-coverage": "jest --coverage"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.0.1",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.9.0",
+    "eslint-config-prettier": "^2.6.0",
+    "eslint-plugin-prettier": "^2.3.1",
+    "jest": "^21.2.1",
+    "jest-t-assert": "^0.2.0",
+    "prettier": "^1.7.4"
   }
 }
