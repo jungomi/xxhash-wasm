@@ -7,6 +7,6 @@
   "license": "MIT",
   "scripts": {
     "compile": "wat2wasm xxhash.wat -o xxhash.wasm",
-    "compile-docker": "docker run -it --rm -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm"
+    "compile-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm"
   }
 }
