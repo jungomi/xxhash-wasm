@@ -1,5 +1,5 @@
 (module
-  (import "data" "memory" (memory 1))
+  (memory (export "mem") 1)
 
   (global $PRIME32_1 i32 (i32.const 2654435761))
   (global $PRIME32_2 i32 (i32.const 2246822519))
