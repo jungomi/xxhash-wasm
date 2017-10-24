@@ -1,0 +1,11 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - docker build -t jungomi/wabt .
+  - docker run -it --rm -v "$PWD":/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm
+
+notifications:
+  email: false

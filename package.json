@@ -6,6 +6,7 @@
   "author": "Michael Jungo <michaeljungo92@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "compile": "wat2wasm xxhash.wat -o xxhash.wasm"
+    "compile": "wat2wasm xxhash.wat -o xxhash.wasm",
+    "compile-docker": "docker run -it --rm -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm"
   }
 }
