@@ -1,11 +1,19 @@
 sudo: required
 
+language: node_js
+node_js:
+  - 8
+
 services:
   - docker
 
-script:
+before_install:
   - docker build -t jungomi/wabt .
-  - docker run -it --rm -v "$PWD":/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm
+
+script:
+  - yarn run lint
+  - yarn run test-coverage
+  - yarn run compile-docker
 
 notifications:
   email: false
