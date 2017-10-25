@@ -13,7 +13,7 @@ before_install:
 script:
   - yarn run lint
   - yarn run test-coverage
-  - yarn run compile-docker
+  - yarn run build
 
 notifications:
   email: false

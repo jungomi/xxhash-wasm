@@ -1,5 +1,5 @@
 import test from "jest-t-assert";
-import Xxhash from "./";
+import Xxhash from "../src";
 import { readFileSync } from "fs";
 import { TextEncoder } from "util";
 

@@ -2,17 +2,31 @@
   "name": "xxhash-wasm",
   "version": "0.1.0",
   "description": "xxhash algorithm implemented in WebAssembly",
-  "main": "index.js",
+  "main": "esm/xxhash-wasm.js",
+  "module": "esm/xxhash-wasm.js",
   "author": "Michael Jungo <michaeljungo92@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jungomi/xxhash-wasm.git"
+  },
+  "files": [
+    "xxhash.wasm",
+    "esm",
+    "umd"
+  ],
   "scripts": {
-    "compile": "wat2wasm xxhash.wat -o xxhash.wasm",
-    "compile-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm",
+    "build": "yarn run build-js && yarn run build-wasm-docker",
+    "build-js": "rollup -c",
+    "build-wasm": "wat2wasm xxhash.wat -o xxhash.wasm",
+    "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm",
+    "clean": "rimraf coverage esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",
     "test": "jest",
     "test-update": "jest --updateSnapshot",
-    "test-coverage": "jest --coverage"
+    "test-coverage": "jest --coverage",
+    "prepublish": "yarn run build"
   },
   "dependencies": {},
   "devDependencies": {
@@ -24,6 +38,12 @@
     "eslint-plugin-prettier": "^2.3.1",
     "jest": "^21.2.1",
     "jest-t-assert": "^0.2.0",
-    "prettier": "^1.7.4"
+    "prettier": "^1.7.4",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "uglify-es": "^3.1.5"
   }
 }
