@@ -1,11 +1,14 @@
 import { readFileSync } from "fs";
+import { resolve } from "path";
 import nodeResolve from "rollup-plugin-node-resolve";
 import babel from "rollup-plugin-babel";
 import uglify from "rollup-plugin-uglify";
 import replace from "rollup-plugin-replace";
 import { minify } from "uglify-es";
 
-const wasmBytes = Array.from(readFileSync("xxhash.wasm"));
+const wasmBytes = Array.from(
+  readFileSync(resolve(__dirname, "src/xxhash.wasm"))
+);
 
 export default {
   input: "src/index.js",

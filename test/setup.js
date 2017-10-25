@@ -4,6 +4,6 @@
 const { readFileSync } = require("fs");
 const { resolve } = require("path");
 
-const wasmBytes = readFileSync(resolve(__dirname, "../xxhash.wasm"));
+const wasmBytes = readFileSync(resolve(__dirname, "../src/xxhash.wasm"));
 
 global.WASM_PRECOMPILED_BYTES = Array.from(wasmBytes);

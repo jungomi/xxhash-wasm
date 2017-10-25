@@ -11,15 +11,14 @@
     "url": "https://github.com/jungomi/xxhash-wasm.git"
   },
   "files": [
-    "xxhash.wasm",
     "esm",
     "umd"
   ],
   "scripts": {
     "build": "yarn run build-wasm-docker && yarn run build-js",
     "build-js": "rollup -c",
-    "build-wasm": "wat2wasm xxhash.wat -o xxhash.wasm",
-    "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm",
+    "build-wasm": "wat2wasm src/xxhash.wat -o src/xxhash.wasm",
+    "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm src/xxhash.wat -o src/xxhash.wasm",
     "clean": "rimraf coverage esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",
