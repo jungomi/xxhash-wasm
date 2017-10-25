@@ -1,12 +1,8 @@
 import test from "jest-t-assert";
 import Xxhash from "../src";
-import { readFileSync } from "fs";
 import { TextEncoder } from "util";
 
-let wasmModule;
-
 test.before(() => {
-  wasmModule = readFileSync("xxhash.wasm");
   // TextEncoder is not a global in Node.
   global.TextEncoder = TextEncoder;
 });
@@ -39,20 +35,20 @@ const testCases = [
 
 for (const testCase of testCases) {
   test(`h32 of ${testCase.input}`, async t => {
-    const xxhash = new Xxhash(wasmModule);
+    const xxhash = new Xxhash();
     const h32 = await xxhash.h32(testCase.input);
     t.is(h32, testCase.h32);
   });
 
   test(`h64 of ${testCase.input}`, async t => {
-    const xxhash = new Xxhash(wasmModule);
+    const xxhash = new Xxhash();
     const h64 = await xxhash.h64(testCase.input);
     t.is(h64, testCase.h64);
   });
 }
 
 test("h32 with different seeds produces different hashes", async t => {
-  const xxhash = new Xxhash(wasmModule);
+  const xxhash = new Xxhash();
   const input = "different seeds";
   const h320 = await xxhash.h32(input, 0);
   const h32abcd = await xxhash.h32(input, 0xabcd);
@@ -60,7 +56,7 @@ test("h32 with different seeds produces different hashes", async t => {
 });
 
 test("h64 with different seeds produces different hashes", async t => {
-  const xxhash = new Xxhash(wasmModule);
+  const xxhash = new Xxhash();
   const input = "different seeds";
   const h640 = await xxhash.h64(input, 0, 0);
   const h64lowAbcd = await xxhash.h64(input, 0, 0xabcd);
