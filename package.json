@@ -16,7 +16,7 @@
     "umd"
   ],
   "scripts": {
-    "build": "yarn run build-js && yarn run build-wasm-docker",
+    "build": "yarn run build-wasm-docker && yarn run build-js",
     "build-js": "rollup -c",
     "build-wasm": "wat2wasm xxhash.wat -o xxhash.wasm",
     "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm xxhash.wat -o xxhash.wasm",
