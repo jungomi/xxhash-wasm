@@ -56,6 +56,33 @@ xxhash.h32(input).then(h32 => console.log(h32)); // ee563564
 xxhash.h64(input).then(h64 => console.log(h64)); // 502b0c5fc4a5704c
 ```
 
+### Node
+
+This was initially meant for the browser, but Node 8 also added support for
+WebAssembly, so it can be run in Node as well. The implementation uses
+the browser API [`TextEncoder`][textencoder-mdn], which is has been added
+recently to Node as [`util.TextEncoder`][textencoder-node], but it is not
+a global. To compensate for that, a CommonJS bundle is created which
+automatically imports `util.TextEncoder`.
+
+*Note: You will see a warning that it's experimental, but it should work just
+fine.*
+
+The `main` field in `package.json` points to the CommonJS bundle, so you can
+require it as usual.
+
+```javascript
+const Xxhash = require("xxhash-wasm");
+
+// Or explicitly use the cjs bundle
+const Xxhash = require("xxhash-wasm/cjs/xxhash-wasm");
+```
+
+If you want to bundle your application for Node with a module bundler that uses
+the `module` field in `package.json`, such as webpack or Rollup, you will need
+to explicitly import `xxhash-wasm/cjs/xxhash-wasm` otherwise the browser version
+is used.
+
 ## API
 
 `const xxhash = new Xxhash()`
@@ -96,6 +123,8 @@ The returned promise resolves with the string of the hash in hexadecimal.
 
 [npm-badge]: https://img.shields.io/npm/v/xxhash-wasm.svg?style=flat-square
 [npm-link]: https://www.npmjs.com/package/xxhash-wasm
+[textencoder-mdn]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/TextEncoder
+[textencoder-node]: https://nodejs.org/api/util.html#util_class_util_textencoder
 [travis]: https://travis-ci.org/jungomi/xxhash-wasm
 [travis-badge]: https://img.shields.io/travis/jungomi/xxhash-wasm/master.svg?style=flat-square
 [unpkg]: https://unpkg.com/
