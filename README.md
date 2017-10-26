@@ -5,6 +5,39 @@
 
 A WebAssembly implementation of [xxHash][xxhash].
 
+## Installation
+
+
+### From npm
+
+```sh
+npm install --save xxhash-wasm
+```
+
+Or with Yarn:
+
+```sh
+yarn add xxhash-wasm
+```
+
+### From [Unpkg][unpkg]
+
+#### ES Modules
+
+```html
+<script type="module">
+  import Xxhash from "https://unpkg.com/xxhash-wasm/esm/xxhash-wasm.js";
+</script>
+```
+
+#### UMD build
+
+```html
+<script src="https://unpkg.com/xxhash-wasm/umd/xxhash-wasm.js"></script>
+```
+
+The global `Xxhash` will be available.
+
 ## Usage
 
 The WebAssembly is contained in the JavaScript bundle, so you don't need to
@@ -65,4 +98,5 @@ The returned promise resolves with the string of the hash in hexadecimal.
 [npm-link]: https://www.npmjs.com/package/xxhash-wasm
 [travis]: https://travis-ci.org/jungomi/xxhash-wasm
 [travis-badge]: https://img.shields.io/travis/jungomi/xxhash-wasm/master.svg?style=flat-square
+[unpkg]: https://unpkg.com/
 [xxhash]: https://github.com/Cyan4973/xxHash
