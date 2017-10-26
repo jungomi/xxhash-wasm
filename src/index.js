@@ -5,6 +5,8 @@
 // eslint-disable-next-line no-undef
 const wasmBytes = new Uint8Array(WASM_PRECOMPILED_BYTES);
 
+const encoder = new TextEncoder("utf-8");
+
 export default class Xxhash {
   constructor() {
     this.wasmInstance = WebAssembly.instantiate(wasmBytes).then(
@@ -13,7 +15,7 @@ export default class Xxhash {
   }
 
   async h32(str, seed = 0) {
-    const strBuffer = new TextEncoder("utf-8").encode(str);
+    const strBuffer = encoder.encode(str);
     const { exports: { mem, xxh32 } } = await this.wasmInstance;
     this.writeBufferToMemory(strBuffer, mem, 0);
     // Logical shift right makes it an u32, otherwise it's interpreted as i32.
@@ -22,7 +24,7 @@ export default class Xxhash {
   }
 
   async h64(str, seedHigh = 0, seedLow = 0) {
-    const strBuffer = new TextEncoder("utf-8").encode(str);
+    const strBuffer = encoder.encode(str);
     const { exports: { mem, xxh64 } } = await this.wasmInstance;
     this.writeBufferToMemory(strBuffer, mem, 8);
     // The first word (64-bit) is used to communicate an u64 between JavaScript

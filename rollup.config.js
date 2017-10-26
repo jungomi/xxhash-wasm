@@ -6,21 +6,37 @@ import uglify from "rollup-plugin-uglify";
 import replace from "rollup-plugin-replace";
 import { minify } from "uglify-es";
 
+const isNode = process.env.TARGET === "node";
+
 const wasmBytes = Array.from(
   readFileSync(resolve(__dirname, "src/xxhash.wasm"))
 );
 
+const output = isNode
+  ? { file: "cjs/xxhash-wasm.js", format: "cjs" }
+  : [
+      { file: "esm/xxhash-wasm.js", format: "es" },
+      { file: "umd/xxhash-wasm.js", format: "umd", name: "Xxhash" }
+    ];
+const replacements = isNode
+  ? {
+      WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
+      // TextEncoder is not global in Node.
+      // Parentheses are need otherwise it thinks the `new` keyword is applied to
+      // the result of TextEncoder("utf-8"), instead of being recognised as
+      // a constructor.
+      TextEncoder: '(require("util").TextEncoder)'
+    }
+  : {
+      WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes)
+    };
+
 export default {
   input: "src/index.js",
-  output: [
-    { file: "esm/xxhash-wasm.js", format: "es" },
-    { file: "umd/xxhash-wasm.js", format: "umd", name: "Xxhash" }
-  ],
+  output,
   sourcemap: true,
   plugins: [
-    replace({
-      WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes)
-    }),
+    replace(replacements),
     babel({ exclude: "node_modules/**" }),
     nodeResolve({ jsnext: true }),
     uglify({}, minify)

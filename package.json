@@ -2,7 +2,7 @@
   "name": "xxhash-wasm",
   "version": "0.1.0",
   "description": "A WebAssembly implementation of xxHash",
-  "main": "esm/xxhash-wasm.js",
+  "main": "cjs/xxhash-wasm.js",
   "module": "esm/xxhash-wasm.js",
   "author": "Michael Jungo <michaeljungo92@gmail.com>",
   "license": "MIT",
@@ -11,6 +11,7 @@
     "url": "https://github.com/jungomi/xxhash-wasm.git"
   },
   "files": [
+    "cjs",
     "esm",
     "umd"
   ],
@@ -22,16 +23,18 @@
   ],
   "scripts": {
     "build": "yarn run build-wasm-docker && yarn run build-js",
-    "build-js": "rollup -c",
+    "build-js": "yarn run build-browser && yarn run build-node",
+    "build-browser": "rollup -c",
+    "build-node": "TARGET=node rollup -c",
     "build-wasm": "wat2wasm src/xxhash.wat -o src/xxhash.wasm",
     "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm src/xxhash.wat -o src/xxhash.wasm",
-    "clean": "rimraf coverage esm umd",
+    "clean": "rimraf coverage cjs esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",
     "test": "jest",
     "test-update": "jest --updateSnapshot",
     "test-coverage": "jest --coverage",
-    "prepublish": "yarn run build"
+    "prepublish": "yarn run clean && yarn run build"
   },
   "dependencies": {},
   "devDependencies": {
