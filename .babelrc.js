@@ -1,4 +1,5 @@
 const isTest = process.env.NODE_ENV === "test";
+const isNode = isTest || process.env.TARGET === "node";
 
 // Browsers that support WebAssembly
 const supportedBrowsers = {
@@ -8,7 +9,7 @@ const supportedBrowsers = {
   safari: 11
 };
 
-const targets = isTest ? { node: "current" } : supportedBrowsers;
+const targets = isNode ? { node: 8 } : supportedBrowsers;
 const modules = isTest ? "commonjs" : false;
 
 module.exports = {
