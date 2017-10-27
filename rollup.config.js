@@ -39,6 +39,6 @@ export default {
     replace(replacements),
     babel({ exclude: "node_modules/**" }),
     nodeResolve({ jsnext: true }),
-    uglify({}, minify)
+    uglify({ toplevel: true }, minify)
   ]
 };
