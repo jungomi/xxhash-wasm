@@ -14,6 +14,7 @@ script:
   - yarn run build
   - yarn run lint
   - yarn run test-coverage
+  - yarn run size
 
 notifications:
   email: false
