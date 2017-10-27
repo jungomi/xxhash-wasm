@@ -59,3 +59,13 @@ test("h64 with different seeds produces different hashes", async t => {
   t.not(h640, h64highAbcd);
   t.not(h64lowAbcd, h64highAbcd);
 });
+
+test("a string greater than the initial memory size works", async t => {
+  const hasher = await xxhash();
+  const bytesPerPage = 64 * 1024;
+  const input = "z".repeat(bytesPerPage + 1);
+  const h32 = hasher.h32(input, 0);
+  const h64 = hasher.h64(input, 0, 0);
+  t.is(h32, "7871ee9b");
+  t.is(h64, "68278ba56dc14510");
+});
