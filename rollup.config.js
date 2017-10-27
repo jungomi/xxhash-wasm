@@ -16,7 +16,7 @@ const output = isNode
   ? { file: "cjs/xxhash-wasm.js", format: "cjs" }
   : [
       { file: "esm/xxhash-wasm.js", format: "es" },
-      { file: "umd/xxhash-wasm.js", format: "umd", name: "Xxhash" }
+      { file: "umd/xxhash-wasm.js", format: "umd", name: "xxhash" }
     ];
 const replacements = isNode
   ? {
