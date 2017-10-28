@@ -5,8 +5,25 @@
 
 A WebAssembly implementation of [xxHash][xxhash].
 
-## Installation
+## Table of Contents
 
+<!-- vim-markdown-toc GFM -->
+
+* [Installation](#installation)
+  * [From npm](#from-npm)
+  * [From Unpkg](#from-unpkg)
+    * [ES Modules](#es-modules)
+    * [UMD build](#umd-build)
+* [Usage](#usage)
+  * [Node](#node)
+* [API](#api)
+* [Comparison to xxhashjs](#comparison-to-xxhashjs)
+  * [Benchmarks](#benchmarks)
+  * [Bundle size](#bundle-size)
+
+<!-- vim-markdown-toc -->
+
+## Installation
 
 ### From npm
 
