@@ -186,25 +186,26 @@ different lengths. *Higher is better*
 
 | String length             | xxhashjs 32-bit    | xxhashjs 64-bit    | xxhash-wasm 32-bit        | xxhash-wasm 64-bit     |
 | ------------------------: | ------------------ | ------------------ | ------------------------- | ---------------------- |
-| 1 byte                    | 683,014 ops/sec    | 12,048 ops/sec     | ***1,414,409 ops/sec***   | 899,967 ops/sec        |
-| 10 bytes                  | 577,761 ops/sec    | 12,073 ops/sec     | ***1,336,927 ops/sec***   | 902,045 ops/sec        |
-| 100 bytes                 | 379,348 ops/sec    | 10,242 ops/sec     | ***1,051,487 ops/sec***   | 748,235 ops/sec        |
-| 1,000 bytes               | 88,732 ops/sec     | 7,755 ops/sec      | ***451,814 ops/sec***     | 444,694 ops/sec        |
-| 10,000 bytes              | 11,754 ops/sec     | 1,694 ops/sec      | 66,484 ops/sec            | ***80,590 ops/sec***   |
-| 100,000 bytes             | 721 ops/sec        | 174 ops/sec        | 6,915 ops/sec             | ***8,935 ops/sec***    |
-| 1,000,000 bytes           | 55,38 ops/sec      | 15,98 ops/sec      | 757 ops/sec               | ***972 ops/sec***      |
-| 10,000,000 bytes          | 5.98 ops/sec       | 1.77 ops/sec       | 71.19 ops/sec             | ***92.02 ops/sec***    |
-| 100,000,000 bytes         | 0.63 ops/sec*      | 0.19 ops/sec*      | 7.23 ops/sec              | ***9.26 ops/sec***     |
+| 1 byte                    | 683,014 ops/sec    | 12,048 ops/sec     | ***1,475,214 ops/sec***   | 979,656 ops/sec        |
+| 10 bytes                  | 577,761 ops/sec    | 12,073 ops/sec     | ***1,427,115 ops/sec***   | 960,567 ops/sec        |
+| 100 bytes                 | 379,348 ops/sec    | 10,242 ops/sec     | ***1,186,211 ops/sec***   | 682,422 ops/sec        |
+| 1,000 bytes               | 88,732 ops/sec     | 7,755 ops/sec      | ***522,107 ops/sec***     | 504,409 ops/sec        |
+| 10,000 bytes              | 11,754 ops/sec     | 1,694 ops/sec      | 93,817 ops/sec            | ***97,087 ops/sec***   |
+| 100,000 bytes             | 721 ops/sec        | 174 ops/sec        | 10,247 ops/sec            | ***11,069 ops/sec***   |
+| 1,000,000 bytes           | 55.38 ops/sec      | 15.98 ops/sec      | 1,019 ops/sec             | ***1,101 ops/sec***    |
+| 10,000,000 bytes          | 5.98 ops/sec       | 1.77 ops/sec       | 98.92 ops/sec             | ***107 ops/sec***      |
+| 100,000,000 bytes         | 0.63 ops/sec*      | 0.19 ops/sec*      | 9.95 ops/sec              | ***10.80 ops/sec***    |
 
 `*` = Runs out of memory with the default heap size.
 
-`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 11 times
-faster (increases as the size of the input grows), and the 64-bit is up to 74
+`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 18 times
+faster (increases as the size of the input grows), and the 64-bit is up to 81
 times faster (decreases as the size of the input grows).
 
-The 64-bit version is the faster algorithm, but it only becomes faster at about
-1kB because of the above mentioned limitations of JavaScript numbers. For
-`xxhashjs` the 64-bit is strictly worse.
+The 64-bit version is the faster algorithm, but it only starts to become faster
+at a little over 1kB because of the above mentioned limitations of JavaScript
+numbers. After that the 64-bit version is roughly 10% faster than the 32-bit
+version. For `xxhashjs` the 64-bit is strictly worse.
 
 ### Bundle size
 
@@ -215,8 +216,8 @@ minified versions. *Lower is better*.
 
 |                | xxhashjs   | xxhash-wasm   |
 | -------------- | ---------- | ------------- |
-| Bundle size    | 41.5kB     | ***3.9kB***   |
-| Gzipped Size   | 10.3kB     | ***1.3kB***   |
+| Bundle size    | 41.5kB     | ***3.7kB***   |
+| Gzipped Size   | 10.3kB     | ***1.2kB***   |
 
 [benchmarkjs]: https://benchmarkjs.com/
 [cuint]: https://github.com/pierrec/js-cuint
