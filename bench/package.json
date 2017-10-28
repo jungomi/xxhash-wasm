@@ -1,0 +1,14 @@
+{
+  "name": "xxhash-wasm-bench",
+  "private": true,
+  "author": "Michael Jungo <michaeljungo92@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --max-old-space-size=4096 index.js"
+  },
+  "dependencies": {
+    "benchmark": "^2.1.4",
+    "xxhash-wasm": "^0.3.0",
+    "xxhashjs": "^0.2.1"
+  }
+}
