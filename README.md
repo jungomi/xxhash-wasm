@@ -3,7 +3,10 @@
 [![Build Status][travis-badge]][travis]
 [![npm][npm-badge]][npm-link]
 
-A WebAssembly implementation of [xxHash][xxhash].
+A WebAssembly implementation of [xxHash][xxhash], a fast non-cryptographic hash
+algorithm. It can be called seamlessly from JavaScript. You can use it like any
+other JavaScript library but still get the benefits of WebAssembly, no special
+setup needed.
 
 ## Table of Contents
 
