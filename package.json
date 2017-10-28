@@ -22,12 +22,11 @@
     "webassembly"
   ],
   "scripts": {
-    "build": "yarn run build-wasm-docker && yarn run build-js",
+    "build": "yarn run build-wasm && yarn run build-js",
     "build-js": "yarn run build-browser && yarn run build-node",
     "build-browser": "rollup -c",
     "build-node": "TARGET=node rollup -c",
-    "build-wasm": "wat2wasm src/xxhash.wat -o src/xxhash.wasm",
-    "build-wasm-docker": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/wabt wat2wasm src/xxhash.wat -o src/xxhash.wasm",
+    "build-wasm": "docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/binaryen wasm-opt -O3 src/xxhash.wat -o src/xxhash.wasm",
     "clean": "rimraf coverage cjs esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",
