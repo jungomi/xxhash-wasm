@@ -5,7 +5,7 @@
 // eslint-disable-next-line no-undef
 const wasmBytes = new Uint8Array(WASM_PRECOMPILED_BYTES);
 
-const encoder = new TextEncoder("utf-8");
+const encoder = new TextEncoder();
 
 function writeBufferToMemory(buffer, memory, offset) {
   if (memory.buffer.byteLength < buffer.byteLength + offset) {
