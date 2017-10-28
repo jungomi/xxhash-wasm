@@ -35,7 +35,8 @@
     "test": "jest",
     "test-update": "jest --updateSnapshot",
     "test-coverage": "jest --coverage",
-    "prepublish": "yarn run clean && yarn run build"
+    "prebuild": "yarn run clean",
+    "prepublish": "yarn run build"
   },
   "dependencies": {},
   "devDependencies": {
