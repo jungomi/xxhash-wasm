@@ -163,11 +163,11 @@ the bundle size by quite a bit when it's used in the browser.
 This library (`xxhash-wasm`) has the big advantage that WebAssembly supports
 `u64` and also some instructions (e.g. `rotl`), which would otherwise have
 to be emulated. However, The downside is that you have to initialise
-a WebAssembly instance, which takes a little over 2 seconds. But once the
-instance is created, it can be used without any further overhead. For the
-benchmarks below, the instantiation is done before the benchmark and therefore
-it's excluded from the results, since it wouldn't make sense to always create
-a new WebAssembly instance.
+a WebAssembly instance, which takes a little over 2ms in Node and about 1ms in
+the browser. But once the instance is created, it can be used without any
+further overhead. For the benchmarks below, the instantiation is done before the
+benchmark and therefore it's excluded from the results, since it wouldn't make
+sense to always create a new WebAssembly instance.
 
 There is still the problem that JavaScript can't represent 64-bit integers and
 both the seed and the result of the 64-bit algorithm are `u64`. To work around
