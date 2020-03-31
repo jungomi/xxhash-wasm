@@ -20,7 +20,9 @@ function writeBufferToMemory(buffer, memory, offset) {
 
 async function xxhash() {
   const {
-    instance: { exports: { mem, xxh32, xxh64 } }
+    instance: {
+      exports: { mem, xxh32, xxh64 }
+    }
   } = await WebAssembly.instantiate(wasmBytes);
   function h32Raw(inputBuffer, seed = 0) {
     writeBufferToMemory(inputBuffer, mem, 0);
