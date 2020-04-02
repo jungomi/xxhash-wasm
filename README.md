@@ -80,7 +80,7 @@ Or with `async`/`await` and destructuring:
 
 ```javascript
 // Creates the WebAssembly instance.
-const { h32, h64 } = await xxhash();
+const { h32, h64, h32Raw, h64Raw } = await xxhash();
 
 const input = "The string that is being hashed";
 // 32-bit version
@@ -130,6 +130,11 @@ greater than the maximum (`0xffffffff`) is wrapped, which means that
 
 Returns a string of the hash in hexadecimal.
 
+`h32Raw(input: Uint8Array, [seed: u32]): number`
+
+Same as `h32` but with a Uint8Array as input instead of a string and returns the
+hash as a number.
+
 `h64(input: string, [seedHigh: u32, seedLow: u32]): string`
 
 Generate a 64-bit hash of `input`. Because JavaScript doesn't support `u64` the
@@ -152,6 +157,10 @@ Each individual part of the seed is a `u32` and they are also wrapped
 individually for numbers greater than the maximum.
 
 Returns a string of the hash in hexadecimal.
+
+`h64Raw(input: Uint8Array, [seedHigh: u32, seedLow: u32]): Uint8Array`
+
+Same as `h64` but with a Uint8Array as input and output.
 
 ## Comparison to [xxhashjs][xxhashjs]
 
