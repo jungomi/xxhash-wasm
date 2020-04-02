@@ -34,10 +34,29 @@ for (const testCase of testCases) {
     t.is(h32, testCase.h32);
   });
 
+  test(`h32Raw of ${testCase.input}`, async t => {
+    const encoder = new TextEncoder();
+    const hasher = await xxhash();
+    const h32 = hasher.h32Raw(encoder.encode(testCase.input)).toString(16);
+    t.is(h32, testCase.h32);
+  });
+
   test(`h64 of ${testCase.input}`, async t => {
     const hasher = await xxhash();
     const h64 = hasher.h64(testCase.input);
     t.is(h64, testCase.h64);
+  });
+
+  test(`h64Raw of ${testCase.input}`, async t => {
+    const encoder = new TextEncoder();
+    const hasher = await xxhash();
+    const h64uint8array = hasher.h64Raw(encoder.encode(testCase.input));
+    t.is(h64uint8array.length, 8);
+    const dataView = new DataView(h64uint8array.buffer);
+    const h64str =
+      dataView.getUint32(0, true).toString(16) +
+      dataView.getUint32(4, true).toString(16);
+    t.is(h64str, testCase.h64);
   });
 }
 

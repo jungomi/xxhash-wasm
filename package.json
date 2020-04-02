@@ -4,6 +4,7 @@
   "description": "A WebAssembly implementation of xxHash",
   "main": "cjs/xxhash-wasm.js",
   "module": "esm/xxhash-wasm.js",
+  "types": "./types.d.ts",
   "author": "Michael Jungo <michaeljungo92@gmail.com>",
   "license": "MIT",
   "repository": {
