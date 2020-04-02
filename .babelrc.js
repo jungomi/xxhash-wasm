@@ -9,7 +9,7 @@ const supportedBrowsers = {
   safari: 11
 };
 
-const targets = isNode ? { node: 8 } : supportedBrowsers;
+const targets = isNode ? { node: 10 } : supportedBrowsers;
 const modules = isTest ? "commonjs" : false;
 
 module.exports = {
