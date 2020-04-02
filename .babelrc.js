@@ -13,5 +13,5 @@ const targets = isNode ? { node: 8 } : supportedBrowsers;
 const modules = isTest ? "commonjs" : false;
 
 module.exports = {
-  presets: [["env", { targets, modules }]]
+  presets: [["@babel/env", { targets, modules }]]
 };
