@@ -15,39 +15,39 @@ const testCases = [
   {
     input: "Call me Ishmael. Some years ago--never mind how long precisely-",
     h32: "6f320359",
-    h64: "2a2e85470d6fd96"
+    h64: "2a2e85470d6fd96",
   },
   {
     input:
       "The quick brown fox jumps over the lazy dog http://i.imgur.com/VHQXScB.gif",
     h32: "5ce7b616",
-    h64: "93267f9820452ead"
+    h64: "93267f9820452ead",
   },
   { input: "heiå", h32: "db5abccc", h64: "b9d3d990d2001a1a" },
-  { input: "κόσμε", h32: "d855f606", h64: "a0488960c70d8772" }
+  { input: "κόσμε", h32: "d855f606", h64: "a0488960c70d8772" },
 ];
 
 for (const testCase of testCases) {
-  test(`h32 of ${testCase.input}`, async t => {
+  test(`h32 of ${testCase.input}`, async (t) => {
     const hasher = await xxhash();
     const h32 = hasher.h32(testCase.input);
     t.is(h32, testCase.h32);
   });
 
-  test(`h32Raw of ${testCase.input}`, async t => {
+  test(`h32Raw of ${testCase.input}`, async (t) => {
     const encoder = new TextEncoder();
     const hasher = await xxhash();
     const h32 = hasher.h32Raw(encoder.encode(testCase.input)).toString(16);
     t.is(h32, testCase.h32);
   });
 
-  test(`h64 of ${testCase.input}`, async t => {
+  test(`h64 of ${testCase.input}`, async (t) => {
     const hasher = await xxhash();
     const h64 = hasher.h64(testCase.input);
     t.is(h64, testCase.h64);
   });
 
-  test(`h64Raw of ${testCase.input}`, async t => {
+  test(`h64Raw of ${testCase.input}`, async (t) => {
     const encoder = new TextEncoder();
     const hasher = await xxhash();
     const h64uint8array = hasher.h64Raw(encoder.encode(testCase.input));
@@ -60,7 +60,7 @@ for (const testCase of testCases) {
   });
 }
 
-test("h32 with different seeds produces different hashes", async t => {
+test("h32 with different seeds produces different hashes", async (t) => {
   const hasher = await xxhash();
   const input = "different seeds";
   const h320 = hasher.h32(input, 0);
@@ -68,7 +68,7 @@ test("h32 with different seeds produces different hashes", async t => {
   t.not(h320, h32abcd);
 });
 
-test("h64 with different seeds produces different hashes", async t => {
+test("h64 with different seeds produces different hashes", async (t) => {
   const hasher = await xxhash();
   const input = "different seeds";
   const h640 = hasher.h64(input, 0, 0);
@@ -79,7 +79,7 @@ test("h64 with different seeds produces different hashes", async t => {
   t.not(h64lowAbcd, h64highAbcd);
 });
 
-test("a string greater than the initial memory size works", async t => {
+test("a string greater than the initial memory size works", async (t) => {
   const hasher = await xxhash();
   const bytesPerPage = 64 * 1024;
   const input = "z".repeat(bytesPerPage + 1);

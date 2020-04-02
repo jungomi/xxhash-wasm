@@ -30,7 +30,7 @@ const handlers = {
   onComplete() {
     const fastest = this.filter("fastest").map("name");
     console.log(`Benchmark ${this.name} - Fastest is ${fastest}`);
-  }
+  },
 };
 
 const seed = 0;
