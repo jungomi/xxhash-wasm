@@ -5,7 +5,7 @@
 // eslint-disable-next-line no-undef
 const wasmBytes = new Uint8Array(WASM_PRECOMPILED_BYTES);
 
-const encoder = new TextEncoder();
+let encoder;
 
 function writeBufferToMemory(buffer, memory, offset) {
   if (memory.buffer.byteLength < buffer.byteLength + offset) {
@@ -32,6 +32,7 @@ async function xxhash() {
   }
 
   function h32(str, seed = 0) {
+    if (!encoder) encoder = new TextEncoder();
     const strBuffer = encoder.encode(str);
     return h32Raw(strBuffer, seed).toString(16);
   }
@@ -57,6 +58,7 @@ async function xxhash() {
   }
 
   function h64(str, seedHigh = 0, seedLow = 0) {
+    if (!encoder) encoder = new TextEncoder();
     const strBuffer = encoder.encode(str);
     const dataView = h64RawToDataView(strBuffer, seedHigh, seedLow);
     const h64str =
