@@ -12,6 +12,7 @@ const testCases = [
   { input: "asdf", h32: "5e702c32", h64: "415872f599cea71e" },
   { input: "abc", h32: "32d153ff", h64: "44bc2cf5ad770999" },
   { input: "abcd", h32: "a3643705", h64: "de0327b0d25d92cc" },
+  { input: "0.7278296545100061", h32: "432c173f", h64: "596877150e8ee48c" },
   {
     input: "Call me Ishmael. Some years ago--never mind how long precisely-",
     h32: "6f320359",
@@ -55,7 +56,7 @@ for (const testCase of testCases) {
     const dataView = new DataView(h64uint8array.buffer);
     const h64str =
       dataView.getUint32(0, true).toString(16) +
-      dataView.getUint32(4, true).toString(16);
+      dataView.getUint32(4, true).toString(16).padStart(8, '0');
     t.is(h64str, testCase.h64);
   });
 }

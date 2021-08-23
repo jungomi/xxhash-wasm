@@ -63,7 +63,7 @@ async function xxhash() {
     const dataView = h64RawToDataView(strBuffer, seedHigh, seedLow);
     const h64str =
       dataView.getUint32(0, true).toString(16) +
-      dataView.getUint32(4, true).toString(16);
+      dataView.getUint32(4, true).toString(16).padStart(8, '0');
     return h64str;
   }
 
