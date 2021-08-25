@@ -56,7 +56,7 @@ for (const testCase of testCases) {
     const dataView = new DataView(h64uint8array.buffer);
     const h64str =
       dataView.getUint32(0, true).toString(16) +
-      dataView.getUint32(4, true).toString(16).padStart(8, '0');
+      dataView.getUint32(4, true).toString(16).padStart(8, "0");
     t.is(h64str, testCase.h64);
   });
 }
