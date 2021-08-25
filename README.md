@@ -1,6 +1,6 @@
 # xxhash-wasm
 
-![](https://github.com/jungomi/xxhash-wasm/workflows/Node.js/badge.svg)
+[![Node.js][actions-nodejs-badge]][actions-nodejs-link]
 [![npm][npm-badge]][npm-link]
 
 A WebAssembly implementation of [xxHash][xxhash], a fast non-cryptographic hash
@@ -228,6 +228,8 @@ minified versions. *Lower is better*.
 | Bundle size    | 41.5kB     | ***3.7kB***   |
 | Gzipped Size   | 10.3kB     | ***1.2kB***   |
 
+[actions-nodejs-badge]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml/badge.svg
+[actions-nodejs-link]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml
 [benchmarkjs]: https://benchmarkjs.com/
 [cuint]: https://github.com/pierrec/js-cuint
 [npm-badge]: https://img.shields.io/npm/v/xxhash-wasm.svg?style=flat-square
