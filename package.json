@@ -28,7 +28,7 @@
     "build-js": "yarn run build-browser && yarn run build-node",
     "build-browser": "rollup -c",
     "build-node": "TARGET=node rollup -c",
-    "build-wasm": "docker run --rm -u $(id -u):$(id -g) -v $PWD:/src -w /src jungomi/binaryen wasm-opt -O3 src/xxhash.wat -o src/xxhash.wasm",
+    "build-wasm": "wasm-opt -O3 src/xxhash.wat -o src/xxhash.wasm",
     "clean": "rimraf coverage cjs esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",

@@ -18,8 +18,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install binaryen
         yarn
-        docker build -t jungomi/binaryen .
     - name: Build
       run: yarn build
     - name: Lint
