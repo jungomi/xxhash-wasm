@@ -1,0 +1,30 @@
+name: Node.js
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Dependencies
+      run: |
+        yarn
+        docker build -t jungomi/binaryen .
+    - name: Build
+      run: yarn build
+    - name: Lint
+      run: yarn lint
+    - name: Test Coverage
+      run: yarn test-coverage
+    - name: Bundle Size
+      run: yarn size

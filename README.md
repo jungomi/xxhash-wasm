@@ -1,6 +1,6 @@
 # xxhash-wasm
 
-[![Build Status][travis-badge]][travis]
+![](https://github.com/jungomi/xxhash-wasm/workflows/Node.js/badge.svg)
 [![npm][npm-badge]][npm-link]
 
 A WebAssembly implementation of [xxHash][xxhash], a fast non-cryptographic hash
