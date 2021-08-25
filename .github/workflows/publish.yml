@@ -1,0 +1,25 @@
+name: Publish Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+    - name: Dependencies
+      run: |
+        yarn
+        docker build -t jungomi/binaryen .
+    - name: Build
+      run: yarn build
+    - name: Publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: npm publish
