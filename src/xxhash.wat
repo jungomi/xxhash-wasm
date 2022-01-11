@@ -83,9 +83,10 @@
         (local.get $seed))
 
   ;; This is the actual WebAssembly implementation.
-  ;; It cannot be used directly from JavaScript because of the lack of support
-  ;; for i64.
-  (func $xxh64 (param $ptr i32) (param $len i32) (param $seed i64) (result i64)
+  ;; $ptr indicates the beginning of the memory where the to-be-hashed data is stored.
+  ;; $len is the length of the data.
+  ;; $seed is the seed to be used in the hash invocation
+  (func (export "xxh64") (param $ptr i32) (param $len i32) (param $seed i64) (result i64)
         (local $h64 i64)
         (local $end i32)
         (local $limit i32)
@@ -178,32 +179,4 @@
         (local.set $value (call $round64 (i64.const 0) (local.get $value)))
         (local.set $acc (i64.xor (local.get $acc) (local.get $value)))
         (local.set $acc (i64.add (i64.mul (local.get $acc) (global.get $PRIME64_1)) (global.get $PRIME64_4)))
-        (local.get $acc))
-
-  ;; This function can be called from JavaScript and it expects that the
-  ;; first word in the memory is the u64 seed, which is followed by the actual
-  ;; data that is being hashed.
-  ;; $ptr indicates the beginning of the memory where it's stored (with seed).
-  ;; $len is the length of the actual data (without the 8bytes for the seed).
-  ;; The function itself doesn't return anything, since the u64 wouldn't work
-  ;; in JavaScript, so instead it is stored in place of the seed.
-  (func (export "xxh64") (param $ptr i32) (param $len i32)
-        (local $seed i64)
-        (local $initial-ptr i32)
-        (local $h64 i64)
-        (local.set $initial-ptr (i32.add (local.get $ptr) (i32.const 0)))
-        ;; Assemble the u64 seed from two u32 that were stored from JavaScript.
-        ;; I would have thought it would be okay to just load an i64 directly,
-        ;; but apparently that is not the case.
-        (local.set $seed (i64.or
-                           (i64.shl
-                             (i64.load32_u (local.get $ptr))
-                             (i64.const 32))
-                           (i64.load32_u (i32.add (local.get $ptr) (i32.const 4)))))
-        (local.set $ptr (i32.add (local.get $ptr) (i32.const 8)))
-        (local.set $h64 (call $xxh64 (local.get $ptr) (local.get $len) (local.get $seed)))
-        ;; Disassemble the u64 hash result to two u32 that can be read from
-        ;; JavaScript. Again, I would have thought just storing the i64 would be
-        ;; good enough.
-        (i32.store (local.get $initial-ptr) (i32.wrap_i64 (i64.shr_u (local.get $h64) (i64.const 32))))
-        (i32.store (i32.add (local.get $initial-ptr) (i32.const 4)) (i32.wrap_i64 (local.get $h64)))))
+        (local.get $acc)))

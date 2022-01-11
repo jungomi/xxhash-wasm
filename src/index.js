@@ -5,66 +5,62 @@
 // eslint-disable-next-line no-undef
 const wasmBytes = new Uint8Array(WASM_PRECOMPILED_BYTES);
 
-let encoder;
-
-function writeBufferToMemory(buffer, memory, offset) {
-  if (memory.buffer.byteLength < buffer.byteLength + offset) {
-    const extraPages = Math.ceil(
-      (buffer.byteLength + offset - memory.buffer.byteLength) / (64 * 1024)
-    );
-    memory.grow(extraPages);
-  }
-  const u8memory = new Uint8Array(memory.buffer, offset);
-  u8memory.set(buffer);
-}
-
 async function xxhash() {
   const {
     instance: {
       exports: { mem, xxh32, xxh64 },
     },
   } = await WebAssembly.instantiate(wasmBytes);
-  function h32Raw(inputBuffer, seed = 0) {
-    writeBufferToMemory(inputBuffer, mem, 0);
+
+  const encoder = new TextEncoder();
+  const defaultSeed = 0;
+  const defaultBigSeed = BigInt(0);
+  const u64Max = 2n ** 64n - 1n;
+
+  let memory = new Uint8Array(mem.buffer);
+  function growMemory(length, offset) {
+    if (mem.buffer.byteLength < length + offset) {
+      const extraPages = Math.ceil(
+        // Wasm pages are spec'd to 64K
+        (length + offset - mem.buffer.byteLength) / (64 * 1024)
+      );
+      mem.grow(extraPages);
+      // After growing, the original memory's ArrayBuffer is detached, so we'll
+      // need to replace our view over it with a new one over the new backing
+      // ArrayBuffer.
+      memory = new Uint8Array(mem.buffer);
+    }
+  }
+
+  function h32Raw(inputBuffer, seed = defaultSeed) {
+    growMemory(inputBuffer.byteLength, 0);
+    memory.set(inputBuffer, 0);
     // Logical shift right makes it an u32, otherwise it's interpreted as
     // an i32.
     return xxh32(0, inputBuffer.byteLength, seed) >>> 0;
   }
 
-  function h32(str, seed = 0) {
-    if (!encoder) encoder = new TextEncoder();
-    const strBuffer = encoder.encode(str);
-    return h32Raw(strBuffer, seed).toString(16);
+  function h32(str, seed = defaultSeed) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
+    // By sizing the buffer to 3 * string-length we guarantee that the buffer
+    // will be appropriately sized for the utf-8 encoding of the string.
+    growMemory(str.length * 3, 0);
+    const { written } = encoder.encodeInto(str, memory);
+    return (xxh32(0, written, seed) >>> 0).toString(16).padStart(8, "0");
   }
 
-  function h64RawToDataView(inputBuffer, seedHigh = 0, seedLow = 0) {
-    writeBufferToMemory(inputBuffer, mem, 8);
-    // The first word (64-bit) is used to communicate an u64 between
-    // JavaScript and WebAssembly. First the seed will be set from
-    // JavaScript and afterwards the result will be set from WebAssembly.
-    const dataView = new DataView(mem.buffer);
-    dataView.setUint32(0, seedHigh, true);
-    dataView.setUint32(4, seedLow, true);
-    xxh64(0, inputBuffer.byteLength);
-    return dataView;
+  function h64Raw(inputBuffer, seed = defaultBigSeed) {
+    growMemory(inputBuffer.byteLength, 0);
+    memory.set(inputBuffer, 0);
+    // BigInts are arbitrary precision and signed, so to get the "correct"
+    // u64 value from the return, we'll need to force that interpretation.
+    return xxh64(0, inputBuffer.byteLength, seed) & u64Max;
   }
 
-  function h64Raw(inputBuffer, seedHigh = 0, seedLow = 0) {
-    return new Uint8Array(
-      h64RawToDataView(inputBuffer, seedHigh, seedLow).buffer,
-      0,
-      8
-    );
-  }
-
-  function h64(str, seedHigh = 0, seedLow = 0) {
-    if (!encoder) encoder = new TextEncoder();
-    const strBuffer = encoder.encode(str);
-    const dataView = h64RawToDataView(strBuffer, seedHigh, seedLow);
-    const h64str =
-      dataView.getUint32(0, true).toString(16) +
-      dataView.getUint32(4, true).toString(16).padStart(8, "0");
-    return h64str;
+  function h64(str, seed = defaultBigSeed) {
+    growMemory(str.length * 3, 0);
+    const { written } = encoder.encodeInto(str, memory);
+    return (xxh64(0, written, seed) & u64Max).toString(16).padStart(16, "0");
   }
 
   return {
