@@ -5,19 +5,46 @@
 // eslint-disable-next-line no-undef
 const wasmBytes = new Uint8Array(WASM_PRECOMPILED_BYTES);
 
+const u32_BYTES = 4;
+const u64_BYTES = 8;
+
+// The xxh32 hash state struct:
+const XXH32_STATE_SIZE_BYTES =
+  u32_BYTES + // total_len
+  u32_BYTES + // large_len
+  u32_BYTES * 4 + // Accumulator lanes
+  u32_BYTES * 4 + // Internal buffer
+  u32_BYTES + // memsize
+  u32_BYTES; // reserved
+
+// The xxh64 hash state struct:
+const XXH64_STATE_SIZE_BYTES =
+  u64_BYTES + // total_len
+  u64_BYTES * 4 + // Accumulator lanes
+  u64_BYTES * 4 + // Internal buffer
+  u32_BYTES + // memsize
+  u32_BYTES + // reserved32
+  u64_BYTES; // reserved64
+
 async function xxhash() {
   const {
     instance: {
-      exports: { mem, xxh32, xxh64 },
+      exports: {
+        mem,
+        xxh32,
+        xxh64,
+        init32,
+        update32,
+        digest32,
+        init64,
+        update64,
+        digest64,
+      },
     },
   } = await WebAssembly.instantiate(wasmBytes);
 
-  const encoder = new TextEncoder();
-  const defaultSeed = 0;
-  const defaultBigSeed = BigInt(0);
-  const u64Max = 2n ** 64n - 1n;
-
   let memory = new Uint8Array(mem.buffer);
+  // Grow the wasm linear memory to accommodate length + offset bytes
   function growMemory(length, offset) {
     if (mem.buffer.byteLength < length + offset) {
       const extraPages = Math.ceil(
@@ -32,42 +59,111 @@ async function xxhash() {
     }
   }
 
-  function h32Raw(inputBuffer, seed = defaultSeed) {
-    growMemory(inputBuffer.byteLength, 0);
-    memory.set(inputBuffer, 0);
-    // Logical shift right makes it an u32, otherwise it's interpreted as
-    // an i32.
-    return xxh32(0, inputBuffer.byteLength, seed) >>> 0;
+  // The h32 and h64 streaming hash APIs are identical, so we can implement
+  // them both by way of a templated call to this generalized function.
+  function create(size, seed, init, update, digest, finalize) {
+    // Ensure that we've actually got enough space in the wasm memory to store
+    // the state blob for this hasher.
+    growMemory(size);
+
+    // We'll hold our hashing state in this closure.
+    const state = new Uint8Array(size);
+    memory.set(state);
+    init(0, seed);
+
+    // Each time we interact with wasm, it may have mutated our state so we'll
+    // need to read it back into our closed copy.
+    state.set(memory.slice(0, size));
+
+    return {
+      update(input) {
+        memory.set(state);
+        let length;
+        if (typeof input === "string") {
+          growMemory(input.length * 3, size);
+          length = encoder.encodeInto(input, memory.subarray(size)).written;
+        } else {
+          // The only other valid input type is a Uint8Array
+          growMemory(input.byteLength, size);
+          memory.set(input, size);
+          length = input.byteLength;
+        }
+        update(0, size, length);
+        state.set(memory.slice(0, size));
+        return this;
+      },
+      digest() {
+        memory.set(state);
+        return finalize(digest(0));
+      },
+    };
   }
 
-  function h32(str, seed = defaultSeed) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
-    // By sizing the buffer to 3 * string-length we guarantee that the buffer
-    // will be appropriately sized for the utf-8 encoding of the string.
-    growMemory(str.length * 3, 0);
-    const { written } = encoder.encodeInto(str, memory);
-    return (xxh32(0, written, seed) >>> 0).toString(16).padStart(8, "0");
+  // Logical shift right makes it an u32, otherwise it's interpreted as an i32.
+  function forceUnsigned32(i) {
+    return i >>> 0;
   }
 
-  function h64Raw(inputBuffer, seed = defaultBigSeed) {
-    growMemory(inputBuffer.byteLength, 0);
-    memory.set(inputBuffer, 0);
-    // BigInts are arbitrary precision and signed, so to get the "correct"
-    // u64 value from the return, we'll need to force that interpretation.
-    return xxh64(0, inputBuffer.byteLength, seed) & u64Max;
+  // BigInts are arbitrary precision and signed, so to get the "correct" u64
+  // value from the return, we'll need to force that interpretation.
+  const u64Max = 2n ** 64n - 1n;
+  function forceUnsigned64(i) {
+    return i & u64Max;
   }
 
-  function h64(str, seed = defaultBigSeed) {
-    growMemory(str.length * 3, 0);
-    const { written } = encoder.encodeInto(str, memory);
-    return (xxh64(0, written, seed) & u64Max).toString(16).padStart(16, "0");
-  }
-
+  const encoder = new TextEncoder();
+  const defaultSeed = 0;
+  const defaultBigSeed = 0n;
   return {
-    h32,
-    h32Raw,
-    h64,
-    h64Raw,
+    h32(str, seed = defaultSeed) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
+      // By sizing the buffer to 3 * string-length we guarantee that the buffer
+      // will be appropriately sized for the utf-8 encoding of the string.
+      growMemory(str.length * 3, 0);
+      return forceUnsigned32(
+        xxh32(0, encoder.encodeInto(str, memory).written, seed)
+      )
+        .toString(16)
+        .padStart(8, "0");
+    },
+    h32Raw(inputBuffer, seed = defaultSeed) {
+      growMemory(inputBuffer.byteLength, 0);
+      memory.set(inputBuffer);
+      return forceUnsigned32(xxh32(0, inputBuffer.byteLength, seed));
+    },
+    create32(seed = defaultSeed) {
+      return create(
+        XXH32_STATE_SIZE_BYTES,
+        seed,
+        init32,
+        update32,
+        digest32,
+        forceUnsigned32
+      );
+    },
+    h64(str, seed = defaultBigSeed) {
+      growMemory(str.length * 3, 0);
+      return forceUnsigned64(
+        xxh64(0, encoder.encodeInto(str, memory).written, seed)
+      )
+        .toString(16)
+        .padStart(16, "0");
+    },
+    h64Raw(inputBuffer, seed = defaultBigSeed) {
+      growMemory(inputBuffer.byteLength, 0);
+      memory.set(inputBuffer);
+      return forceUnsigned64(xxh64(0, inputBuffer.byteLength, seed));
+    },
+    create64(seed = defaultBigSeed) {
+      return create(
+        XXH64_STATE_SIZE_BYTES,
+        seed,
+        init64,
+        update64,
+        digest64,
+        forceUnsigned64
+      );
+    },
   };
 }
 

@@ -28,7 +28,7 @@
     "build-js": "yarn run build-browser && yarn run build-node",
     "build-browser": "rollup -c",
     "build-node": "TARGET=node rollup -c",
-    "build-wasm": "wasm-opt -O4 src/xxhash.wat -o src/xxhash.wasm",
+    "build-wasm": "wasm-opt --enable-bulk-memory -O4 src/xxhash.wat -o src/xxhash.wasm",
     "clean": "rimraf coverage cjs esm umd",
     "fix": "eslint . --fix",
     "lint": "eslint .",
@@ -60,15 +60,15 @@
   "bundlesize": [
     {
       "path": "./cjs/xxhash-wasm.js",
-      "maxSize": "1.5kb"
+      "maxSize": "2.2kb"
     },
     {
       "path": "./esm/xxhash-wasm.js",
-      "maxSize": "1.5kb"
+      "maxSize": "2.2kb"
     },
     {
       "path": "./umd/xxhash-wasm.js",
-      "maxSize": "1.5kb"
+      "maxSize": "2.3kb"
     }
   ]
 }

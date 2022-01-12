@@ -45,6 +45,17 @@ for (const testCase of testCases) {
     t.is(h32, testCase.h32);
   });
 
+  test(`streamed h32 of ${testCase.input}`, async (t) => {
+    const hasher = await xxhash();
+    const h32 = hasher
+      .create32()
+      .update(testCase.input)
+      .digest()
+      .toString(16)
+      .padStart(8, "0");
+    t.is(h32, testCase.h32);
+  });
+
   test(`h64 of ${testCase.input}`, async (t) => {
     const hasher = await xxhash();
     const h64 = hasher.h64(testCase.input);
@@ -56,6 +67,17 @@ for (const testCase of testCases) {
     const hasher = await xxhash();
     const h64 = hasher.h64Raw(encoder.encode(testCase.input));
     t.is(h64, BigInt(`0x${testCase.h64}`));
+  });
+
+  test(`streamed h64 of ${testCase.input}`, async (t) => {
+    const hasher = await xxhash();
+    const h64 = hasher
+      .create64()
+      .update(testCase.input)
+      .digest()
+      .toString(16)
+      .padStart(16, "0");
+    t.is(h64, testCase.h64);
   });
 }
 
@@ -86,4 +108,20 @@ test("a string greater than the initial memory size works", async (t) => {
   const h64 = hasher.h64(input, 0n);
   t.is(h32, "7871ee9b");
   t.is(h64, "68278ba56dc14510");
+});
+
+test("streamed h32 with multiple inputs produces same hash", async (t) => {
+  const hasher = await xxhash();
+  const { update, digest } = hasher.create32(0);
+  update("hello");
+  update("world");
+  t.is(digest().toString(16).padStart(8, "0"), hasher.h32("helloworld"));
+});
+
+test("streamed h64 with multiple inputs produces same hash", async (t) => {
+  const hasher = await xxhash();
+  const { update, digest } = hasher.create64(0n);
+  update("hello");
+  update("world");
+  t.is(digest().toString(16).padStart(16, "0"), hasher.h64("helloworld"));
 });
