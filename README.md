@@ -20,7 +20,8 @@ setup needed.
 * [Usage](#usage)
   * [Streaming](#streaming)
   * [Node](#node)
-  * [Performance]
+  * [Performance](#performance)
+  * [Engine Requirements](#engine-requirements)
 * [API](#api)
 * [Comparison to xxhashjs](#comparison-to-xxhashjs)
   * [Benchmarks](#benchmarks)
@@ -143,6 +144,22 @@ is used.
 For performance sensitive applications, `xxhash-wasm` provides the `h**String` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
 
 The `h**`, `h**String`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
+
+### Engine Requirements
+
+In an effort to make this library as performant as possible it makes use of several recent additions to browsers, Node, and the Webassembly specification. Notably, this includes:
+
+1. `BigInt` support in WebAssembly
+2. Bulk memory operations in WebAssembly
+3. `TextEncoder.encodeInto`
+
+Taking all of these requirements into account, `xxhash-wasm` should be compatible with:
+* Chrome >= 85
+* Firefox >= 79
+* Safari >= 15.0
+* Node >= 15.0
+
+If support for an older engine is required, `xxhash-wasm` 0.4.2 is available with more limited engine requirements, with 3-4x slower hashing performance.
 
 ## API
 
