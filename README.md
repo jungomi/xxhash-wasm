@@ -18,7 +18,9 @@ setup needed.
     * [ES Modules](#es-modules)
     * [UMD build](#umd-build)
 * [Usage](#usage)
+  * [Streaming](#streaming)
   * [Node](#node)
+  * [Performance]
 * [API](#api)
 * [Comparison to xxhashjs](#comparison-to-xxhashjs)
   * [Benchmarks](#benchmarks)
@@ -89,6 +91,26 @@ h32(input); // ee563564
 h64(input); // 502b0c5fc4a5704c
 ```
 
+### Streaming
+
+`xxhash-wasm` supports a `crypto`-like streaming api, useful for avoiding memory consumption when hashing large amounts of data:
+
+```javascript
+const { create32, create64 } = await xxhash();
+
+// 32-bit version
+create32()
+  .update("some data")
+  .update(Uint8Array.from([1, 2, 3]))
+  .digest(); // 955607085
+
+// 64-bit version
+create64()
+  .update("some data")
+  .update(Uint8Array.from([1, 2, 3]))
+  .digest(); // 883044157688673477n
+```
+
 ### Node
 
 This was initially meant for the browser, but Node 8 also added support for
@@ -116,6 +138,12 @@ the `module` field in `package.json`, such as webpack or Rollup, you will need
 to explicitly import `xxhash-wasm/cjs/xxhash-wasm` otherwise the browser version
 is used.
 
+### Performance
+
+For performance sensitive applications, `xxhash-wasm` provides the `h**String` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
+
+The `h**`, `h**String`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
+
 ## API
 
 `const { h32, h64 } = await xxhash()`
@@ -128,12 +156,16 @@ Generate a 32-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u32` and any number greater than the maximum (`0xffffffff`) is
 wrapped, which means that `0xffffffff + 1 = 0`.
 
-Returns a string of the hash in hexadecimal.
+Returns a string of the hash in hexadecimal, zero padded.
+
+`h32String(input: string, [seed: u32]): number`
+
+Same as `h32`, but returning a `number`. This avoids the overhead of the string formatting of the result.
 
 `h32Raw(input: Uint8Array, [seed: u32]): number`
 
-Same as `h32` but with a Uint8Array as input instead of a string and returns the
-hash as a number.
+Same as `h32` but with a `Uint8Array` as input instead of a `string` and returns the
+hash as a `number`.
 
 `create32([seed: number]): Hash<number>`
 
@@ -144,11 +176,15 @@ Create a 32-bit hash for streaming applications. See `Hash<T>` below.
 Generate a 64-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u64` provided as a BigInt.
 
-Returns a string of the hash in hexadecimal.
+Returns a zero-padded string of the hash in hexadecimal.
+
+`h64String(input: string, [seed: BigInt]): BigInt`
+
+Same as `h64`, but returning a `BigInt`. This avoids the overhead of the string formatting of the result.
 
 `h64Raw(input: Uint8Array, [seed: BigInt]): BigInt`
 
-Same as `h64` but with a Uint8Array as input, returning an unformatted BigInt 
+Same as `h64` but with a `Uint8Array` as input, returning an unformatted `BigInt` 
 hash value.
 
 `create64([seed: BigInt]): Hash<BigInt>`
