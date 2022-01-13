@@ -102,12 +102,14 @@ const { create32, create64 } = await xxhash();
 // 32-bit version
 create32()
   .update("some data")
+  // update accepts either a string or Uint8Array
   .update(Uint8Array.from([1, 2, 3]))
   .digest(); // 955607085
 
 // 64-bit version
 create64()
   .update("some data")
+  // update accepts either a string or Uint8Array
   .update(Uint8Array.from([1, 2, 3]))
   .digest(); // 883044157688673477n
 ```
