@@ -148,7 +148,7 @@ Returns a string of the hash in hexadecimal.
 
 `h64Raw(input: Uint8Array, [seed: BigInt]): BigInt`
 
-Same as `h64` but with a Uint8Array as input, yeidling an unformatted BigInt 
+Same as `h64` but with a Uint8Array as input, returning an unformatted BigInt 
 hash value.
 
 `create64([seed: BigInt]): Hash<BigInt>`
