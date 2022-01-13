@@ -6,9 +6,11 @@ declare module "xxhash-wasm" {
 
   type Exports = {
     h32(input: string, seed?: number): string;
+    h32String(input: string, seed?: number): number;
     h32Raw(inputBuffer: Uint8Array, seed?: number): number;
     create32(seed?: number): Hash<number>;
     h64(input: string, seed?: BigInt): string;
+    h64String(input: string, seed?: BigInt): BigInt;
     h64Raw(inputBuffer: Uint8Array, seed?: BigInt): BigInt;
     create64(seed?: BigInt): Hash<BigInt>;
   };

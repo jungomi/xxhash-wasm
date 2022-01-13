@@ -114,18 +114,29 @@ async function xxhash() {
   const encoder = new TextEncoder();
   const defaultSeed = 0;
   const defaultBigSeed = 0n;
+
+  function h32String(str, seed = defaultSeed) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
+    // By sizing the buffer to 3 * string-length we guarantee that the buffer
+    // will be appropriately sized for the utf-8 encoding of the string.
+    growMemory(str.length * 3, 0);
+    return forceUnsigned32(
+      xxh32(0, encoder.encodeInto(str, memory).written, seed)
+    );
+  }
+
+  function h64String(str, seed = defaultBigSeed) {
+    growMemory(str.length * 3, 0);
+    return forceUnsigned64(
+      xxh64(0, encoder.encodeInto(str, memory).written, seed)
+    );
+  }
+
   return {
     h32(str, seed = defaultSeed) {
-      // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
-      // By sizing the buffer to 3 * string-length we guarantee that the buffer
-      // will be appropriately sized for the utf-8 encoding of the string.
-      growMemory(str.length * 3, 0);
-      return forceUnsigned32(
-        xxh32(0, encoder.encodeInto(str, memory).written, seed)
-      )
-        .toString(16)
-        .padStart(8, "0");
+      return h32String(str, seed).toString(16).padStart(8, "0");
     },
+    h32String,
     h32Raw(inputBuffer, seed = defaultSeed) {
       growMemory(inputBuffer.byteLength, 0);
       memory.set(inputBuffer);
@@ -142,13 +153,9 @@ async function xxhash() {
       );
     },
     h64(str, seed = defaultBigSeed) {
-      growMemory(str.length * 3, 0);
-      return forceUnsigned64(
-        xxh64(0, encoder.encodeInto(str, memory).written, seed)
-      )
-        .toString(16)
-        .padStart(16, "0");
+      return h64String(str, seed).toString(16).padStart(16, "0");
     },
+    h64String,
     h64Raw(inputBuffer, seed = defaultBigSeed) {
       growMemory(inputBuffer.byteLength, 0);
       memory.set(inputBuffer);
