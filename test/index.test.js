@@ -31,7 +31,13 @@ const testCases = [
 for (const testCase of testCases) {
   test(`h32 of ${testCase.input}`, async (t) => {
     const hasher = await xxhash();
-    const h32 = hasher.h32(testCase.input);
+    const h32 = hasher.h32(testCase.input).toString(16).padStart(8, "0");
+    t.is(h32, testCase.h32);
+  });
+
+  test(`h32ToString of ${testCase.input}`, async (t) => {
+    const hasher = await xxhash();
+    const h32 = hasher.h32ToString(testCase.input);
     t.is(h32, testCase.h32);
   });
 
@@ -42,12 +48,6 @@ for (const testCase of testCases) {
       .h32Raw(encoder.encode(testCase.input))
       .toString(16)
       .padStart(8, "0");
-    t.is(h32, testCase.h32);
-  });
-
-  test(`h32String of ${testCase.input}`, async (t) => {
-    const hasher = await xxhash();
-    const h32 = hasher.h32String(testCase.input).toString(16).padStart(8, "0");
     t.is(h32, testCase.h32);
   });
 
@@ -65,6 +65,12 @@ for (const testCase of testCases) {
   test(`h64 of ${testCase.input}`, async (t) => {
     const hasher = await xxhash();
     const h64 = hasher.h64(testCase.input);
+    t.is(h64, BigInt(`0x${testCase.h64}`));
+  });
+
+  test(`h64ToString of ${testCase.input}`, async (t) => {
+    const hasher = await xxhash();
+    const h64 = hasher.h64ToString(testCase.input);
     t.is(h64, testCase.h64);
   });
 
@@ -72,12 +78,6 @@ for (const testCase of testCases) {
     const encoder = new TextEncoder();
     const hasher = await xxhash();
     const h64 = hasher.h64Raw(encoder.encode(testCase.input));
-    t.is(h64, BigInt(`0x${testCase.h64}`));
-  });
-
-  test(`h64String of ${testCase.input}`, async (t) => {
-    const hasher = await xxhash();
-    const h64 = hasher.h64String(testCase.input);
     t.is(h64, BigInt(`0x${testCase.h64}`));
   });
 
@@ -116,8 +116,8 @@ test("a string greater than the initial memory size works", async (t) => {
   const hasher = await xxhash();
   const bytesPerPage = 64 * 1024;
   const input = "z".repeat(bytesPerPage + 1);
-  const h32 = hasher.h32(input, 0);
-  const h64 = hasher.h64(input, 0n);
+  const h32 = hasher.h32ToString(input, 0);
+  const h64 = hasher.h64ToString(input, 0n);
   t.is(h32, "7871ee9b");
   t.is(h64, "68278ba56dc14510");
 });
@@ -127,7 +127,7 @@ test("streamed h32 with multiple inputs produces same hash", async (t) => {
   const { update, digest } = hasher.create32(0);
   update("hello");
   update("world");
-  t.is(digest().toString(16).padStart(8, "0"), hasher.h32("helloworld"));
+  t.is(digest(), hasher.h32("helloworld"));
 });
 
 test("streamed h64 with multiple inputs produces same hash", async (t) => {
@@ -135,7 +135,7 @@ test("streamed h64 with multiple inputs produces same hash", async (t) => {
   const { update, digest } = hasher.create64(0n);
   update("hello");
   update("world");
-  t.is(digest().toString(16).padStart(16, "0"), hasher.h64("helloworld"));
+  t.is(digest(), hasher.h64("helloworld"));
 });
 
 test("streamed h32 with buffer input produces same hash", async (t) => {

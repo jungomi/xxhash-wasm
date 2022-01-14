@@ -73,9 +73,9 @@ import xxhash from "xxhash-wasm";
 xxhash().then(hasher => {
   const input = "The string that is being hashed";
   // 32-bit version
-  hasher.h32(input); // ee563564
+  hasher.h32ToString(input); // ee563564
   // 64-bit version
-  hasher.h64(input); // 502b0c5fc4a5704c
+  hasher.h64ToString(input); // 502b0c5fc4a5704c
 });
 ```
 
@@ -87,9 +87,9 @@ const { h32, h64, h32Raw, h64Raw } = await xxhash();
 
 const input = "The string that is being hashed";
 // 32-bit version
-h32(input); // ee563564
+h32(input); // 3998627172
 // 64-bit version
-h64(input); // 502b0c5fc4a5704c
+h64(input); // 5776724552493396044n
 ```
 
 ### Streaming
@@ -143,9 +143,9 @@ is used.
 
 ### Performance
 
-For performance sensitive applications, `xxhash-wasm` provides the `h**String` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
+For performance sensitive applications, `xxhash-wasm` provides the `h**` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion in the `h**ToString` APIs can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
 
-The `h**`, `h**String`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
+The `h**`, `h**ToString`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
 
 ### Engine Requirements
 
@@ -169,42 +169,40 @@ If support for an older engine is required, `xxhash-wasm` 0.4.2 is available wit
 
 Create a WebAssembly instance.
 
-`h32(input: string, [seed: u32]): string`
+`h32(input: string, [seed: u32]): number`
 
 Generate a 32-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u32` and any number greater than the maximum (`0xffffffff`) is
 wrapped, which means that `0xffffffff + 1 = 0`.
 
-Returns a string of the hash in hexadecimal, zero padded.
+Returns a `u32` `number` containing the hash value.
 
-`h32String(input: string, [seed: u32]): number`
+`h32ToString(input: string, [seed: u32]): string`
 
-Same as `h32`, but returning a `number`. This avoids the overhead of the string formatting of the result.
+Same as `h32`, but returning a zero-padded hex string.
 
 `h32Raw(input: Uint8Array, [seed: u32]): number`
 
-Same as `h32` but with a `Uint8Array` as input instead of a `string` and returns the
-hash as a `number`.
+Same as `h32` but with a `Uint8Array` as input instead of a `string`.
 
 `create32([seed: number]): Hash<number>`
 
 Create a 32-bit hash for streaming applications. See `Hash<T>` below.
 
-`h64(input: string, [seed: BigInt]): string`
+`h64(input: string, [seed: BigInt]): BigInt`
 
 Generate a 64-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u64` provided as a BigInt.
 
-Returns a zero-padded string of the hash in hexadecimal.
+Returns a `u64` `BigInt` containing the hash value.
 
-`h64String(input: string, [seed: BigInt]): BigInt`
+`h64ToString(input: string, [seed: BigInt]): string`
 
-Same as `h64`, but returning a `BigInt`. This avoids the overhead of the string formatting of the result.
+Same as `h64`, but returning a zero-padded hex string.
 
 `h64Raw(input: Uint8Array, [seed: BigInt]): BigInt`
 
-Same as `h64` but with a `Uint8Array` as input, returning an unformatted `BigInt` 
-hash value.
+Same as `h64` but with a `Uint8Array` as input instead of a `string`.
 
 `create64([seed: BigInt]): Hash<BigInt>`
 
@@ -242,22 +240,22 @@ different lengths. *Higher is better*
 
 | String length             | xxhashjs 32-bit    | xxhashjs 64-bit    | xxhash-wasm 32-bit      | xxhash-wasm 64-bit      |
 | ------------------------: | ------------------ | ------------------ | ----------------------- | ----------------------- |
-| 1 byte                    | 513,517 ops/sec    | 11,896 ops/sec     | 2,122,322 ops/sec       | ***3,556,437 ops/sec*** |
-| 10 bytes                  | 552,133 ops/sec    | 12,953 ops/sec     | 2,075,154 ops/sec       | ***3,196,204 ops/sec*** |
-| 100 bytes                 | 425,277 ops/sec    | 10,838 ops/sec     | 1,867,002 ops/sec       | ***3,169,921 ops/sec*** |
-| 1,000 bytes               | 102,165 ops/sec    | 6,697 ops/sec      | 1,468,336 ops/sec       | ***2,393,906 ops/sec*** |
-| 10,000 bytes              | 13,010 ops/sec     | 1,452 ops/sec      | 446,415 ops/sec         | ***787,430 ops/sec***   |
-| 100,000 bytes             | 477 ops/sec        | 146 ops/sec        | 58,339 ops/sec          | ***91,895 ops/sec***    |
-| 1,000,000 bytes           | 36.40 ops/sec      | 12.93 ops/sec      | 5,443 ops/sec           | ***8,379 ops/sec***     |
-| 10,000,000 bytes          | 3.12 ops/sec       | 1.19 ops/sec       | 307 ops/sec             | ***417 ops/sec***       |
-| 100,000,000 bytes         | 0.31 ops/sec       | 0.13 ops/sec       | 28.70 ops/sec           | ***35.63 ops/sec***     |
+| 1 byte                    | 513,517 ops/sec    | 11,896 ops/sec     | 5,752,446 ops/sec       | ***4,438,501 ops/sec*** |
+| 10 bytes                  | 552,133 ops/sec    | 12,953 ops/sec     | 6,240,640 ops/sec       | ***4,855,340 ops/sec*** |
+| 100 bytes                 | 425,277 ops/sec    | 10,838 ops/sec     | 5,470,011 ops/sec       | ***4,314,904 ops/sec*** |
+| 1,000 bytes               | 102,165 ops/sec    | 6,697 ops/sec      | 3,283,526 ops/sec       | ***3,332,556 ops/sec*** |
+| 10,000 bytes              | 13,010 ops/sec     | 1,452 ops/sec      | 589,068 ops/sec         | ***940,350 ops/sec***   |
+| 100,000 bytes             | 477 ops/sec        | 146 ops/sec        | 61,824 ops/sec          | ***98,959 ops/sec***    |
+| 1,000,000 bytes           | 36.40 ops/sec      | 12.93 ops/sec      | 5,122 ops/sec           | ***8,632 ops/sec***     |
+| 10,000,000 bytes          | 3.12 ops/sec       | 1.19 ops/sec       | 326 ops/sec             | ***444 ops/sec***       |
+| 100,000,000 bytes         | 0.31 ops/sec       | 0.13 ops/sec       | 27.84 ops/sec           | ***34.56 ops/sec***     |
 
-`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 98 times
+`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 90 times
 faster (generally increases as the size of the input grows), and the 64-bit is 
 up to 350 times faster (generally increases as the size of the input grows).
 
 The 64-bit version is the faster algorithm, and retains a performance advantage
-over all lengths over xxhashjs and the 32-bit algorithm.
+over all lengths over xxhashjs and the 32-bit algorithm above ~100 bytes.
 
 `xxhash-wasm` also significantly outperforms Node's built-in hash algorithms,
 making it suitable for use in a wide variety of situations. Benchmarks from
@@ -265,30 +263,30 @@ an x64 MacBook Pro running Node 17.3:
 
 | String length             | Node `crypto` md5  | Node `crypto` sha1 |  xxhash-wasm 64-bit     |
 | ------------------------: | ------------------ | ------------------ | ----------------------- |
-| 1 byte                    | 342,924 ops/sec    | 352,825 ops/sec    | ***3,556,437 ops/sec*** |
-| 10 bytes                  | 356,596 ops/sec    | 352,209 ops/sec    | ***3,196,204 ops/sec*** |
-| 100 bytes                 | 354,898 ops/sec    | 355,024 ops/sec    | ***3,169,921 ops/sec*** |
-| 1,000 bytes               | 249,242 ops/sec    | 271,383 ops/sec    | ***2,393,906 ops/sec*** |
-| 10,000 bytes              | 62,896 ops/sec     | 80,986 ops/sec     | ***787,430 ops/sec***   |
-| 100,000 bytes             | 7,316 ops/sec      | 10,198 ops/sec     | ***91,895 ops/sec***    |
-| 1,000,000 bytes           | 698 ops/sec        | 966 ops/sec        | ***8,379 ops/sec***     |
-| 10,000,000 bytes          | 58.98 ops/sec      | 79.78 ops/sec      | ***417 ops/sec***       | 
-| 100,000,000 bytes         | 6.30 ops/sec       | 8.20 ops/sec       | ***35.63 ops/sec***     |
+| 1 byte                    | 342,924 ops/sec    | 352,825 ops/sec    | ***4,438,501 ops/sec*** |
+| 10 bytes                  | 356,596 ops/sec    | 352,209 ops/sec    | ***4,855,340 ops/sec*** |
+| 100 bytes                 | 354,898 ops/sec    | 355,024 ops/sec    | ***4,314,904 ops/sec*** |
+| 1,000 bytes               | 249,242 ops/sec    | 271,383 ops/sec    | ***3,332,556 ops/sec*** |
+| 10,000 bytes              | 62,896 ops/sec     | 80,986 ops/sec     | ***940,350 ops/sec***   |
+| 100,000 bytes             | 7,316 ops/sec      | 10,198 ops/sec     | ***98,959 ops/sec***    |
+| 1,000,000 bytes           | 698 ops/sec        | 966 ops/sec        | ***8,632 ops/sec***     |
+| 10,000,000 bytes          | 58.98 ops/sec      | 79.78 ops/sec      | ***444 ops/sec***       |
+| 100,000,000 bytes         | 6.30 ops/sec       | 8.20 ops/sec       | ***34.56 ops/sec***     |
 
 If suitable for your use case, the `Raw` API offers significant throughput
 improvements over the string-hashing API, particularly for smaller inputs:
 
 | String length             | xxhash-wasm 64-bit Raw  |  xxhash-wasm 64-bit |
 | ------------------------: | ----------------------- | ------------------- |
-| 1 byte                    | ***9,342,811 ops/sec*** | 3,556,437 ops/sec   |
-| 10 bytes                  | ***9,668,989 ops/sec*** | 3,196,204 ops/sec   |
-| 100 bytes                 | ***8,775,845 ops/sec*** | 3,169,921 ops/sec   |
-| 1,000 bytes               | ***5,541,403 ops/sec*** | 2,393,906 ops/sec   |
-| 10,000 bytes              | ***1,079,866 ops/sec*** | 787,430 ops/sec     |
-| 100,000 bytes             | ***113,350 ops/sec***   | 91,895 ops/sec      |
-| 1,000,000 bytes           | ***9,779 ops/sec***     | 8,379 ops/sec       |
-| 10,000,000 bytes          | ***563 ops/sec***       | 417 ops/sec         | 
-| 100,000,000 bytes         | ***43.77 ops/sec***     | 35.63 ops/sec       |
+| 1 byte                    | ***9,342,811 ops/sec*** | 4,438,501 ops/sec   |
+| 10 bytes                  | ***9,668,989 ops/sec*** | 4,855,340 ops/sec   |
+| 100 bytes                 | ***8,775,845 ops/sec*** | 4,314,904 ops/sec   |
+| 1,000 bytes               | ***5,541,403 ops/sec*** | 3,332,556 ops/sec   |
+| 10,000 bytes              | ***1,079,866 ops/sec*** | 940,350 ops/sec     |
+| 100,000 bytes             | ***113,350 ops/sec***   | 98,959 ops/sec      |
+| 1,000,000 bytes           | ***9,779 ops/sec***     | 8,632 ops/sec       |
+| 10,000,000 bytes          | ***563 ops/sec***       | 444 ops/sec         | 
+| 100,000,000 bytes         | ***43.77 ops/sec***     | 34.56 ops/sec       |
 
 ### Bundle size
 
