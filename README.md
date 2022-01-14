@@ -72,10 +72,13 @@ import xxhash from "xxhash-wasm";
 // Creates the WebAssembly instance.
 xxhash().then(hasher => {
   const input = "The string that is being hashed";
+
   // 32-bit version
-  hasher.h32ToString(input); // ee563564
+  hasher.h32(input) // 3998627172 (decimal representation)
+  hasher.h32ToString(input); // "ee563564"
   // 64-bit version
-  hasher.h64ToString(input); // 502b0c5fc4a5704c
+  hasher.h64(input) // 5776724552493396044n (BigInt)
+  hasher.h64ToString(input); // "502b0c5fc4a5704c"
 });
 ```
 
@@ -87,9 +90,9 @@ const { h32, h64, h32Raw, h64Raw } = await xxhash();
 
 const input = "The string that is being hashed";
 // 32-bit version
-h32(input); // 3998627172
+h32(input); // 3998627172 (decimal representation)
 // 64-bit version
-h64(input); // 5776724552493396044n
+h64(input); // 5776724552493396044n (BigInt)
 ```
 
 ### Streaming
@@ -240,9 +243,9 @@ different lengths. *Higher is better*
 
 | String length             | xxhashjs 32-bit    | xxhashjs 64-bit    | xxhash-wasm 32-bit      | xxhash-wasm 64-bit      |
 | ------------------------: | ------------------ | ------------------ | ----------------------- | ----------------------- |
-| 1 byte                    | 513,517 ops/sec    | 11,896 ops/sec     | 5,752,446 ops/sec       | ***4,438,501 ops/sec*** |
-| 10 bytes                  | 552,133 ops/sec    | 12,953 ops/sec     | 6,240,640 ops/sec       | ***4,855,340 ops/sec*** |
-| 100 bytes                 | 425,277 ops/sec    | 10,838 ops/sec     | 5,470,011 ops/sec       | ***4,314,904 ops/sec*** |
+| 1 byte                    | 513,517 ops/sec    | 11,896 ops/sec     | ***5,752,446 ops/sec*** | 4,438,501 ops/sec       |
+| 10 bytes                  | 552,133 ops/sec    | 12,953 ops/sec     | ***6,240,640 ops/sec*** | 4,855,340 ops/sec       |
+| 100 bytes                 | 425,277 ops/sec    | 10,838 ops/sec     | ***5,470,011 ops/sec*** | 4,314,904 ops/sec       |
 | 1,000 bytes               | 102,165 ops/sec    | 6,697 ops/sec      | 3,283,526 ops/sec       | ***3,332,556 ops/sec*** |
 | 10,000 bytes              | 13,010 ops/sec     | 1,452 ops/sec      | 589,068 ops/sec         | ***940,350 ops/sec***   |
 | 100,000 bytes             | 477 ops/sec        | 146 ops/sec        | 61,824 ops/sec          | ***98,959 ops/sec***    |
@@ -254,8 +257,9 @@ different lengths. *Higher is better*
 faster (generally increases as the size of the input grows), and the 64-bit is 
 up to 350 times faster (generally increases as the size of the input grows).
 
-The 64-bit version is the faster algorithm, and retains a performance advantage
-over all lengths over xxhashjs and the 32-bit algorithm above ~100 bytes.
+The 64-bit version is the faster algorithm but there is a small degree of 
+overhead involved in using BigInts, and so it retains a performance advantage
+over all lengths over xxhashjs and the 32-bit algorithm above ~1000 bytes.
 
 `xxhash-wasm` also significantly outperforms Node's built-in hash algorithms,
 making it suitable for use in a wide variety of situations. Benchmarks from
