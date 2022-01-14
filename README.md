@@ -18,7 +18,10 @@ setup needed.
     * [ES Modules](#es-modules)
     * [UMD build](#umd-build)
 * [Usage](#usage)
+  * [Streaming](#streaming)
   * [Node](#node)
+  * [Performance](#performance)
+  * [Engine Requirements](#engine-requirements)
 * [API](#api)
 * [Comparison to xxhashjs](#comparison-to-xxhashjs)
   * [Benchmarks](#benchmarks)
@@ -69,10 +72,13 @@ import xxhash from "xxhash-wasm";
 // Creates the WebAssembly instance.
 xxhash().then(hasher => {
   const input = "The string that is being hashed";
+
   // 32-bit version
-  hasher.h32(input); // ee563564
+  hasher.h32(input) // 3998627172 (decimal representation)
+  hasher.h32ToString(input); // "ee563564"
   // 64-bit version
-  hasher.h64(input); // 502b0c5fc4a5704c
+  hasher.h64(input) // 5776724552493396044n (BigInt)
+  hasher.h64ToString(input); // "502b0c5fc4a5704c"
 });
 ```
 
@@ -84,9 +90,31 @@ const { h32, h64, h32Raw, h64Raw } = await xxhash();
 
 const input = "The string that is being hashed";
 // 32-bit version
-h32(input); // ee563564
+h32(input); // 3998627172 (decimal representation)
 // 64-bit version
-h64(input); // 502b0c5fc4a5704c
+h64(input); // 5776724552493396044n (BigInt)
+```
+
+### Streaming
+
+`xxhash-wasm` supports a `crypto`-like streaming api, useful for avoiding memory consumption when hashing large amounts of data:
+
+```javascript
+const { create32, create64 } = await xxhash();
+
+// 32-bit version
+create32()
+  .update("some data")
+  // update accepts either a string or Uint8Array
+  .update(Uint8Array.from([1, 2, 3]))
+  .digest(); // 955607085
+
+// 64-bit version
+create64()
+  .update("some data")
+  // update accepts either a string or Uint8Array
+  .update(Uint8Array.from([1, 2, 3]))
+  .digest(); // 883044157688673477n
 ```
 
 ### Node
@@ -116,51 +144,81 @@ the `module` field in `package.json`, such as webpack or Rollup, you will need
 to explicitly import `xxhash-wasm/cjs/xxhash-wasm` otherwise the browser version
 is used.
 
+### Performance
+
+For performance sensitive applications, `xxhash-wasm` provides the `h**` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion in the `h**ToString` APIs can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
+
+The `h**`, `h**ToString`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
+
+### Engine Requirements
+
+In an effort to make this library as performant as possible it makes use of several recent additions to browsers, Node, and the Webassembly specification. Notably, this includes:
+
+1. `BigInt` support in WebAssembly
+2. Bulk memory operations in WebAssembly
+3. `TextEncoder.encodeInto`
+
+Taking all of these requirements into account, `xxhash-wasm` should be compatible with:
+* Chrome >= 85
+* Firefox >= 79
+* Safari >= 15.0
+* Node >= 15.0
+
+If support for an older engine is required, `xxhash-wasm` 0.4.2 is available with more limited engine requirements, with 3-4x slower hashing performance.
+
 ## API
 
 `const { h32, h64 } = await xxhash()`
 
 Create a WebAssembly instance.
 
-`h32(input: string, [seed: u32]): string`
+`h32(input: string, [seed: u32]): number`
 
-Generate a 32-bit hash of `input`. The optional `seed` is a `u32` and any number
-greater than the maximum (`0xffffffff`) is wrapped, which means that
-`0xffffffff + 1 = 0`.
+Generate a 32-bit hash of the UTF-8 encoded bytes of `input`. The optional
+`seed` is a `u32` and any number greater than the maximum (`0xffffffff`) is
+wrapped, which means that `0xffffffff + 1 = 0`.
 
-Returns a string of the hash in hexadecimal.
+Returns a `u32` `number` containing the hash value.
+
+`h32ToString(input: string, [seed: u32]): string`
+
+Same as `h32`, but returning a zero-padded hex string.
 
 `h32Raw(input: Uint8Array, [seed: u32]): number`
 
-Same as `h32` but with a Uint8Array as input instead of a string and returns the
-hash as a number.
+Same as `h32` but with a `Uint8Array` as input instead of a `string`.
 
-`h64(input: string, [seedHigh: u32, seedLow: u32]): string`
+`create32([seed: number]): Hash<number>`
 
-Generate a 64-bit hash of `input`. Because JavaScript doesn't support `u64` the
-seed is split into two `u32`, where `seedHigh` represents the first 32-bits of
-the `u64` and `seedLow` the remaining 32-bits. For example:
+Create a 32-bit hash for streaming applications. See `Hash<T>` below.
 
-```javascript
-// Hex
-seed64:   ffffffff22222222
-seedhigh: ffffffff
-seedLow:          22222222
+`h64(input: string, [seed: BigInt]): BigInt`
 
-// Binary
-seed64:   1111111111111111111111111111111100100010001000100010001000100010
-seedhigh: 11111111111111111111111111111111
-seedLow:                                  00100010001000100010001000100010
-```
+Generate a 64-bit hash of the UTF-8 encoded bytes of `input`. The optional
+`seed` is a `u64` provided as a BigInt.
 
-Each individual part of the seed is a `u32` and they are also wrapped
-individually for numbers greater than the maximum.
+Returns a `u64` `BigInt` containing the hash value.
 
-Returns a string of the hash in hexadecimal.
+`h64ToString(input: string, [seed: BigInt]): string`
 
-`h64Raw(input: Uint8Array, [seedHigh: u32, seedLow: u32]): Uint8Array`
+Same as `h64`, but returning a zero-padded hex string.
 
-Same as `h64` but with a Uint8Array as input and output.
+`h64Raw(input: Uint8Array, [seed: BigInt]): BigInt`
+
+Same as `h64` but with a `Uint8Array` as input instead of a `string`.
+
+`create64([seed: BigInt]): Hash<BigInt>`
+
+Create a 64-bit hash for streaming applications. See `Hash<T>` below.
+
+`type Hash<T> {
+  update(input: string | Uint8Array): Hash<T>;
+  digest(): T
+}`
+
+The streaming API mirrors Node's built-in `crypto.createHash`, providing
+`update` and `digest` methods to add data to the hash and compute the final hash
+value, respectively.
 
 ## Comparison to [xxhashjs][xxhashjs]
 
@@ -178,43 +236,61 @@ further overhead. For the benchmarks below, the instantiation is done before the
 benchmark and therefore it's excluded from the results, since it wouldn't make
 sense to always create a new WebAssembly instance.
 
-There is still the problem that JavaScript can't represent 64-bit integers and
-both the seed and the result of the 64-bit algorithm are `u64`. To work around
-this, the seed and the result are split into two `u32`, which are assembled and
-disassembled into/from a `u64`. Splitting the seed into two `u32` isn't a big
-deal, but the result is more problematic because to assemble the 64-bit hash in
-JavaScript, 3 strings have to be created: The hex representation of the first
-`u32` and the hex representation of the second `u32`, which are then
-concatenated to a 64-bit hex representation. That are 2 additional strings and
-this is a notable overhead when the input is small.
-
 ### Benchmarks
 
 Benchmarks are using [Benchmark.js][benchmarkjs] with random strings of
 different lengths. *Higher is better*
 
-| String length             | xxhashjs 32-bit    | xxhashjs 64-bit    | xxhash-wasm 32-bit        | xxhash-wasm 64-bit     |
-| ------------------------: | ------------------ | ------------------ | ------------------------- | ---------------------- |
-| 1 byte                    | 683,014 ops/sec    | 12,048 ops/sec     | ***1,475,214 ops/sec***   | 979,656 ops/sec        |
-| 10 bytes                  | 577,761 ops/sec    | 12,073 ops/sec     | ***1,427,115 ops/sec***   | 960,567 ops/sec        |
-| 100 bytes                 | 379,348 ops/sec    | 10,242 ops/sec     | ***1,186,211 ops/sec***   | 682,422 ops/sec        |
-| 1,000 bytes               | 88,732 ops/sec     | 7,755 ops/sec      | ***522,107 ops/sec***     | 504,409 ops/sec        |
-| 10,000 bytes              | 11,754 ops/sec     | 1,694 ops/sec      | 93,817 ops/sec            | ***97,087 ops/sec***   |
-| 100,000 bytes             | 721 ops/sec        | 174 ops/sec        | 10,247 ops/sec            | ***11,069 ops/sec***   |
-| 1,000,000 bytes           | 55.38 ops/sec      | 15.98 ops/sec      | 1,019 ops/sec             | ***1,101 ops/sec***    |
-| 10,000,000 bytes          | 5.98 ops/sec       | 1.77 ops/sec       | 98.92 ops/sec             | ***107 ops/sec***      |
-| 100,000,000 bytes         | 0.63 ops/sec*      | 0.19 ops/sec*      | 9.95 ops/sec              | ***10.80 ops/sec***    |
+| String length             | xxhashjs 32-bit    | xxhashjs 64-bit    | xxhash-wasm 32-bit      | xxhash-wasm 64-bit      |
+| ------------------------: | ------------------ | ------------------ | ----------------------- | ----------------------- |
+| 1 byte                    | 513,517 ops/sec    | 11,896 ops/sec     | ***5,752,446 ops/sec*** | 4,438,501 ops/sec       |
+| 10 bytes                  | 552,133 ops/sec    | 12,953 ops/sec     | ***6,240,640 ops/sec*** | 4,855,340 ops/sec       |
+| 100 bytes                 | 425,277 ops/sec    | 10,838 ops/sec     | ***5,470,011 ops/sec*** | 4,314,904 ops/sec       |
+| 1,000 bytes               | 102,165 ops/sec    | 6,697 ops/sec      | 3,283,526 ops/sec       | ***3,332,556 ops/sec*** |
+| 10,000 bytes              | 13,010 ops/sec     | 1,452 ops/sec      | 589,068 ops/sec         | ***940,350 ops/sec***   |
+| 100,000 bytes             | 477 ops/sec        | 146 ops/sec        | 61,824 ops/sec          | ***98,959 ops/sec***    |
+| 1,000,000 bytes           | 36.40 ops/sec      | 12.93 ops/sec      | 5,122 ops/sec           | ***8,632 ops/sec***     |
+| 10,000,000 bytes          | 3.12 ops/sec       | 1.19 ops/sec       | 326 ops/sec             | ***444 ops/sec***       |
+| 100,000,000 bytes         | 0.31 ops/sec       | 0.13 ops/sec       | 27.84 ops/sec           | ***34.56 ops/sec***     |
 
-`*` = Runs out of memory with the default heap size.
+`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 90 times
+faster (generally increases as the size of the input grows), and the 64-bit is 
+up to 350 times faster (generally increases as the size of the input grows).
 
-`xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 18 times
-faster (increases as the size of the input grows), and the 64-bit is up to 81
-times faster (decreases as the size of the input grows).
+The 64-bit version is the faster algorithm but there is a small degree of 
+overhead involved in using BigInts, and so it retains a performance advantage
+over all lengths over xxhashjs and the 32-bit algorithm above ~1000 bytes.
 
-The 64-bit version is the faster algorithm, but it only starts to become faster
-at a little over 1kB because of the above mentioned limitations of JavaScript
-numbers. After that the 64-bit version is roughly 10% faster than the 32-bit
-version. For `xxhashjs` the 64-bit is strictly worse.
+`xxhash-wasm` also significantly outperforms Node's built-in hash algorithms,
+making it suitable for use in a wide variety of situations. Benchmarks from
+an x64 MacBook Pro running Node 17.3:
+
+| String length             | Node `crypto` md5  | Node `crypto` sha1 |  xxhash-wasm 64-bit     |
+| ------------------------: | ------------------ | ------------------ | ----------------------- |
+| 1 byte                    | 342,924 ops/sec    | 352,825 ops/sec    | ***4,438,501 ops/sec*** |
+| 10 bytes                  | 356,596 ops/sec    | 352,209 ops/sec    | ***4,855,340 ops/sec*** |
+| 100 bytes                 | 354,898 ops/sec    | 355,024 ops/sec    | ***4,314,904 ops/sec*** |
+| 1,000 bytes               | 249,242 ops/sec    | 271,383 ops/sec    | ***3,332,556 ops/sec*** |
+| 10,000 bytes              | 62,896 ops/sec     | 80,986 ops/sec     | ***940,350 ops/sec***   |
+| 100,000 bytes             | 7,316 ops/sec      | 10,198 ops/sec     | ***98,959 ops/sec***    |
+| 1,000,000 bytes           | 698 ops/sec        | 966 ops/sec        | ***8,632 ops/sec***     |
+| 10,000,000 bytes          | 58.98 ops/sec      | 79.78 ops/sec      | ***444 ops/sec***       |
+| 100,000,000 bytes         | 6.30 ops/sec       | 8.20 ops/sec       | ***34.56 ops/sec***     |
+
+If suitable for your use case, the `Raw` API offers significant throughput
+improvements over the string-hashing API, particularly for smaller inputs:
+
+| String length             | xxhash-wasm 64-bit Raw  |  xxhash-wasm 64-bit |
+| ------------------------: | ----------------------- | ------------------- |
+| 1 byte                    | ***9,342,811 ops/sec*** | 4,438,501 ops/sec   |
+| 10 bytes                  | ***9,668,989 ops/sec*** | 4,855,340 ops/sec   |
+| 100 bytes                 | ***8,775,845 ops/sec*** | 4,314,904 ops/sec   |
+| 1,000 bytes               | ***5,541,403 ops/sec*** | 3,332,556 ops/sec   |
+| 10,000 bytes              | ***1,079,866 ops/sec*** | 940,350 ops/sec     |
+| 100,000 bytes             | ***113,350 ops/sec***   | 98,959 ops/sec      |
+| 1,000,000 bytes           | ***9,779 ops/sec***     | 8,632 ops/sec       |
+| 10,000,000 bytes          | ***563 ops/sec***       | 444 ops/sec         | 
+| 100,000,000 bytes         | ***43.77 ops/sec***     | 34.56 ops/sec       |
 
 ### Bundle size
 
@@ -225,8 +301,8 @@ minified versions. *Lower is better*.
 
 |                | xxhashjs   | xxhash-wasm   |
 | -------------- | ---------- | ------------- |
-| Bundle size    | 41.5kB     | ***3.7kB***   |
-| Gzipped Size   | 10.3kB     | ***1.2kB***   |
+| Bundle size    | 41.5kB     | ***11.4kB***  |
+| Gzipped Size   | 10.3kB     | ***2.3kB***   |
 
 [actions-nodejs-badge]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml/badge.svg
 [actions-nodejs-link]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml
