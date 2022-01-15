@@ -119,16 +119,6 @@ create64()
 
 ### Node
 
-This was initially meant for the browser, but Node 8 also added support for
-WebAssembly, so it can be run in Node as well. The implementation uses
-the browser API [`TextEncoder`][textencoder-mdn], which is has been added
-recently to Node as [`util.TextEncoder`][textencoder-node], but it is not
-a global. To compensate for that, a CommonJS bundle is created which
-automatically imports `util.TextEncoder`.
-
-*Note: You will see a warning that it's experimental, but it should work just
-fine.*
-
 The `main` field in `package.json` points to the CommonJS bundle, so you can
 require it as usual.
 
@@ -310,8 +300,6 @@ minified versions. *Lower is better*.
 [cuint]: https://github.com/pierrec/js-cuint
 [npm-badge]: https://img.shields.io/npm/v/xxhash-wasm.svg?style=flat-square
 [npm-link]: https://www.npmjs.com/package/xxhash-wasm
-[textencoder-mdn]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/TextEncoder
-[textencoder-node]: https://nodejs.org/api/util.html#util_class_util_textencoder
 [travis]: https://travis-ci.org/jungomi/xxhash-wasm
 [travis-badge]: https://img.shields.io/travis/jungomi/xxhash-wasm/master.svg?style=flat-square
 [unpkg]: https://unpkg.com/

@@ -22,18 +22,9 @@ const output = isNode
         sourcemap: true,
       },
     ];
-const replacements = isNode
-  ? {
-      WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
-      // TextEncoder is not global in Node.
-      // Parentheses are need otherwise it thinks the `new` keyword is applied to
-      // the result of TextEncoder("utf-8"), instead of being recognised as
-      // a constructor.
-      TextEncoder: '(require("util").TextEncoder)',
-    }
-  : {
-      WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
-    };
+const replacements = {
+  WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
+};
 
 export default {
   input: "src/index.js",
