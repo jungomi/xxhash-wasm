@@ -3,15 +3,15 @@ const isNode = isTest || process.env.TARGET === "node";
 
 // Browsers that support WebAssembly
 const supportedBrowsers = {
-  chrome: 57,
-  edge: 16,
-  firefox: 53,
-  safari: 11
+  chrome: 85,
+  edge: 79,
+  firefox: 79,
+  safari: 15,
 };
 
-const targets = isNode ? { node: 10 } : supportedBrowsers;
+const targets = isNode ? { node: 16 } : supportedBrowsers;
 const modules = isTest ? "commonjs" : false;
 
 module.exports = {
-  presets: [["@babel/env", { targets, modules }]]
+  presets: [["@babel/env", { targets, modules }]],
 };

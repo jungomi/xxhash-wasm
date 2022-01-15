@@ -119,20 +119,24 @@ create64()
 
 ### Node
 
-The `main` field in `package.json` points to the CommonJS bundle, so you can
-require it as usual.
+It doesn't matter whether you are using CommonJS or ES Modules in Node
+(e.g. with `"type": "module"` in `package.json` or using the explicit file
+extensions `.cjs` or `.mjs` respectively), importing `xxhash-wasm` will always
+load the corresponding module, as both bundles are provided and specified in
+the `exports` field of its `package.json`, therefore the appropriate one will
+automatically be selected.
+
+**Using ES Modules**
+
+```javascript
+import xxhash from "xxhash-wasm";
+```
+
+**Using CommonJS**
 
 ```javascript
 const xxhash = require("xxhash-wasm");
-
-// Or explicitly use the cjs bundle
-const xxhash = require("xxhash-wasm/cjs/xxhash-wasm");
 ```
-
-If you want to bundle your application for Node with a module bundler that uses
-the `module` field in `package.json`, such as webpack or Rollup, you will need
-to explicitly import `xxhash-wasm/cjs/xxhash-wasm` otherwise the browser version
-is used.
 
 ### Performance
 

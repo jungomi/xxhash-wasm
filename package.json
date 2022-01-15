@@ -2,8 +2,13 @@
   "name": "xxhash-wasm",
   "version": "0.4.2",
   "description": "A WebAssembly implementation of xxHash",
-  "main": "cjs/xxhash-wasm.js",
-  "module": "esm/xxhash-wasm.js",
+  "type": "module",
+  "main": "./cjs/xxhash-wasm.cjs",
+  "module": "./esm/xxhash-wasm.js",
+  "exports": {
+    "import": "./esm/xxhash-wasm.js",
+    "require": "./cjs/xxhash-wasm.cjs"
+  },
   "types": "./types.d.ts",
   "author": "Michael Jungo <michaeljungo92@gmail.com>",
   "license": "MIT",
@@ -60,7 +65,7 @@
   },
   "bundlesize": [
     {
-      "path": "./cjs/xxhash-wasm.js",
+      "path": "./cjs/xxhash-wasm.cjs",
       "maxSize": "2.2kb"
     },
     {

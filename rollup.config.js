@@ -12,7 +12,12 @@ const wasmBytes = Array.from(
 );
 
 const output = isNode
-  ? { file: "cjs/xxhash-wasm.js", format: "cjs", sourcemap: true }
+  ? {
+      file: "cjs/xxhash-wasm.cjs",
+      format: "cjs",
+      sourcemap: true,
+      exports: "default",
+    }
   : [
       { file: "esm/xxhash-wasm.js", format: "es", sourcemap: true },
       {

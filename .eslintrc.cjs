@@ -1,20 +1,21 @@
 module.exports = {
-  parser: "babel-eslint",
+  parser: "@babel/eslint-parser",
   parserOptions: {
     ecmaVersion: 6,
     sourceType: "module",
     ecmaFeatures: {
-      jsx: true
-    }
+      jsx: true,
+    },
+    requireConfigFile: false,
   },
   env: {
     es2020: true,
     es6: true,
     browser: true,
-    node: true
+    node: true,
   },
   globals: {
-    WebAssembly: true
+    WebAssembly: true,
   },
   extends: ["eslint:recommended", "prettier"],
   plugins: ["prettier"],
@@ -23,6 +24,6 @@ module.exports = {
     "brace-style": ["error", "1tbs"],
     "no-unused-vars": "warn",
     "no-var": "error",
-    "prefer-const": "warn"
-  }
+    "prefer-const": "warn",
+  },
 };
