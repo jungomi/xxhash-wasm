@@ -34,6 +34,7 @@ const handlers = {
 };
 
 const seed = 0;
+const seedBigInt = 0n;
 
 async function runBench() {
   console.time("wasm setup");
@@ -55,7 +56,7 @@ async function runBench() {
         h32(input, seed);
       })
       .add("xxhash-wasm#h64", () => {
-        h64(input, 0, seed);
+        h64(input, seedBigInt);
       })
       .run();
   }
