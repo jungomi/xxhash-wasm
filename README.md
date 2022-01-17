@@ -18,11 +18,14 @@ setup needed.
     * [ES Modules](#es-modules)
     * [UMD build](#umd-build)
 * [Usage](#usage)
-  * [Streaming](#streaming)
+  * [Streaming Example](#streaming-example)
   * [Node](#node)
-  * [Performance](#performance)
+* [Performance](#performance)
   * [Engine Requirements](#engine-requirements)
 * [API](#api)
+  * [h32](#h32)
+  * [h64](#h64)
+  * [Streaming](#streaming)
 * [Comparison to xxhashjs](#comparison-to-xxhashjs)
   * [Benchmarks](#benchmarks)
   * [Bundle size](#bundle-size)
@@ -74,10 +77,13 @@ xxhash().then(hasher => {
   const input = "The string that is being hashed";
 
   // 32-bit version
-  hasher.h32(input) // 3998627172 (decimal representation)
+  hasher.h32(input); // 3998627172 (decimal representation)
+  // For convenience, get hash as string of its zero-padded hex representation
   hasher.h32ToString(input); // "ee563564"
+
   // 64-bit version
-  hasher.h64(input) // 5776724552493396044n (BigInt)
+  hasher.h64(input); // 5776724552493396044n (BigInt)
+  // For convenience, get hash as string of its zero-padded hex representation
   hasher.h64ToString(input); // "502b0c5fc4a5704c"
 });
 ```
@@ -86,7 +92,7 @@ Or with `async`/`await` and destructuring:
 
 ```javascript
 // Creates the WebAssembly instance.
-const { h32, h64, h32Raw, h64Raw } = await xxhash();
+const { h32, h64 } = await xxhash();
 
 const input = "The string that is being hashed";
 // 32-bit version
@@ -95,9 +101,10 @@ h32(input); // 3998627172 (decimal representation)
 h64(input); // 5776724552493396044n (BigInt)
 ```
 
-### Streaming
+### Streaming Example
 
-`xxhash-wasm` supports a `crypto`-like streaming api, useful for avoiding memory consumption when hashing large amounts of data:
+`xxhash-wasm` supports a `crypto`-like streaming api, useful for avoiding memory
+consumption when hashing large amounts of data:
 
 ```javascript
 const { create32, create64 } = await xxhash();
@@ -138,35 +145,78 @@ import xxhash from "xxhash-wasm";
 const xxhash = require("xxhash-wasm");
 ```
 
-### Performance
+## Performance
 
-For performance sensitive applications, `xxhash-wasm` provides the `h**` and `h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex strings. The overhead of the string conversion in the `h**ToString` APIs can be as much as 20% of overall runtime when hashing small byte-size inputs, and the string result is often inconsequential (if one is simply going to compare the results). When necessary, getting a zero-padded hex string from the provided `number` or `BigInt` results is easily achieved via `result.toString(16).padStart(16, "0")`.
+For performance sensitive applications, `xxhash-wasm` provides the `h**` and
+`h**Raw` APIs, which return raw numeric hash results rather than zero-padded hex
+strings. The overhead of the string conversion in the `h**ToString` APIs can be
+as much as 20% of overall runtime when hashing small byte-size inputs, and the
+string result is often inconsequential (for example when simply checking if the
+the resulting hashes are the same). When necessary, getting a zero-padded hex
+string from the provided `number` or [`BigInt`][bigint-mdn] results is easily
+achieved via `result.toString(16).padStart(16, "0")` and the `h**ToString` APIs
+are purely for convenience.
 
-The `h**`, `h**ToString`, and streaming APIs make use of `TextEncoder.encodeInto` to directly encode strings as a stream of UTF-8 bytes into the webassembly memory buffer, meaning that for string-hashing purposes, these APIs will be significantly faster than converting the string to bytes externally and using the `Raw` API. That said, for large strings it may be beneficial to consider the streaming API or another approach to encoding, as `encodeInto` is forced to allocate 3-times the string length to account for the chance the input string contains high-byte-count code units.
+The `h**`, `h**ToString`, and streaming APIs make use of
+[`TextEncoder.encodeInto`][textencoder-encodeinto-mdn] to directly encode
+strings as a stream of UTF-8 bytes into the WebAssembly memory buffer, meaning
+that for string-hashing purposes, these APIs will be significantly faster than
+converting the string to bytes externally and using the `Raw` API. That said,
+for large strings it may be beneficial to consider the streaming API or another
+approach to encoding, as `encodeInto` is forced to allocate 3-times the string
+length to account for the chance the input string contains high-byte-count
+code units.
+
+*If possible, defer the encoding of the string to the hashing, unless you need
+to use the encoded string (bytes) for other purposes as well, or you are
+creating the bytes differently (e.g. different encoding), in which case it's
+much more efficient to use the `h**Raw` APIs instead of having to unnecessarily
+convert them to a string first.*
 
 ### Engine Requirements
 
-In an effort to make this library as performant as possible it makes use of several recent additions to browsers, Node, and the Webassembly specification. Notably, this includes:
+In an effort to make this library as performant as possible, it uses several
+recent additions to browsers, Node and the WebAssembly specification.
+Notably, these include:
 
-1. `BigInt` support in WebAssembly
+1. [`BigInt`][bigint-mdn] support in WebAssembly
 2. Bulk memory operations in WebAssembly
-3. `TextEncoder.encodeInto`
+3. [`TextEncoder.encodeInto`][textencoder-encodeinto-mdn]
 
-Taking all of these requirements into account, `xxhash-wasm` should be compatible with:
+Taking all of these requirements into account, `xxhash-wasm` should be
+compatible with:
+
 * Chrome >= 85
+* Edge >= 79
 * Firefox >= 79
 * Safari >= 15.0
 * Node >= 15.0
 
-If support for an older engine is required, `xxhash-wasm` 0.4.2 is available with more limited engine requirements, with 3-4x slower hashing performance.
+If support for an older engine is required, `xxhash-wasm@0.4.2` is available
+with much broader engine support, but 3-4x slower hashing performance.
 
 ## API
 
-`const { h32, h64 } = await xxhash()`
+```js
+const {
+  h32,
+  h32ToString,
+  h32Raw,
+  create32,
+  h64,
+  h64ToString,
+  h64Raw,
+  create64,
+} = await xxhash();
+```
 
 Create a WebAssembly instance.
 
-`h32(input: string, [seed: u32]): number`
+### h32
+
+```typescript
+h32(input: string, [seed: u32]): number
+```
 
 Generate a 32-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u32` and any number greater than the maximum (`0xffffffff`) is
@@ -174,45 +224,65 @@ wrapped, which means that `0xffffffff + 1 = 0`.
 
 Returns a `u32` `number` containing the hash value.
 
-`h32ToString(input: string, [seed: u32]): string`
+```typescript
+h32ToString(input: string, [seed: u32]): string
+```
 
 Same as `h32`, but returning a zero-padded hex string.
 
-`h32Raw(input: Uint8Array, [seed: u32]): number`
+```typescript
+h32Raw(input: Uint8Array, [seed: u32]): number
+```
 
 Same as `h32` but with a `Uint8Array` as input instead of a `string`.
 
-`create32([seed: number]): Hash<number>`
+### h64
 
-Create a 32-bit hash for streaming applications. See `Hash<T>` below.
-
-`h64(input: string, [seed: BigInt]): BigInt`
+```typescript
+h64(input: string, [seed: BigInt]): BigInt
+```
 
 Generate a 64-bit hash of the UTF-8 encoded bytes of `input`. The optional
-`seed` is a `u64` provided as a BigInt.
+`seed` is a `u64` provided as a [BigInt][bigint-mdn].
 
-Returns a `u64` `BigInt` containing the hash value.
+Returns a `u64` [`BigInt`][bigint-mdn] containing the hash value.
 
-`h64ToString(input: string, [seed: BigInt]): string`
+```typescript
+h64ToString(input: string, [seed: BigInt]): string
+```
 
 Same as `h64`, but returning a zero-padded hex string.
 
-`h64Raw(input: Uint8Array, [seed: BigInt]): BigInt`
+```typescript
+h64Raw(input: Uint8Array, [seed: BigInt]): BigInt
+```
 
 Same as `h64` but with a `Uint8Array` as input instead of a `string`.
 
-`create64([seed: BigInt]): Hash<BigInt>`
+### Streaming
 
-Create a 64-bit hash for streaming applications. See `Hash<T>` below.
-
-`type Hash<T> {
+```typescript
+type Hash<T> {
   update(input: string | Uint8Array): Hash<T>;
   digest(): T
-}`
+}
+```
 
 The streaming API mirrors Node's built-in `crypto.createHash`, providing
 `update` and `digest` methods to add data to the hash and compute the final hash
 value, respectively.
+
+```typescript
+create32([seed: number]): Hash<number>
+```
+
+Create a 32-bit hash for streaming applications. See `Hash<T>` below.
+
+```typescript
+create64([seed: BigInt]): Hash<BigInt>
+```
+
+Create a 64-bit hash for streaming applications. See `Hash<T>` below.
 
 ## Comparison to [xxhashjs][xxhashjs]
 
@@ -248,16 +318,17 @@ different lengths. *Higher is better*
 | 100,000,000 bytes         | 0.31 ops/sec       | 0.13 ops/sec       | 27.84 ops/sec           | ***34.56 ops/sec***     |
 
 `xxhash-wasm` outperforms `xxhashjs` significantly, the 32-bit is up to 90 times
-faster (generally increases as the size of the input grows), and the 64-bit is 
+faster (generally increases as the size of the input grows), and the 64-bit is
 up to 350 times faster (generally increases as the size of the input grows).
 
-The 64-bit version is the faster algorithm but there is a small degree of 
+The 64-bit version is the faster algorithm but there is a small degree of
 overhead involved in using BigInts, and so it retains a performance advantage
 over all lengths over xxhashjs and the 32-bit algorithm above ~1000 bytes.
 
 `xxhash-wasm` also significantly outperforms Node's built-in hash algorithms,
-making it suitable for use in a wide variety of situations. Benchmarks from
-an x64 MacBook Pro running Node 17.3:
+making it suitable for use in a wide variety of situations, where
+non-cryptographic hashes are acceptable. Benchmarks from an x64 MacBook Pro
+running Node 17.3:
 
 | String length             | Node `crypto` md5  | Node `crypto` sha1 |  xxhash-wasm 64-bit     |
 | ------------------------: | ------------------ | ------------------ | ----------------------- |
@@ -272,7 +343,9 @@ an x64 MacBook Pro running Node 17.3:
 | 100,000,000 bytes         | 6.30 ops/sec       | 8.20 ops/sec       | ***34.56 ops/sec***     |
 
 If suitable for your use case, the `Raw` API offers significant throughput
-improvements over the string-hashing API, particularly for smaller inputs:
+improvements over the string-hashing API, particularly for smaller inputs,
+assuming that you have access to the `Uint8Array` already (see also the
+[Performance section](#performance)):
 
 | String length             | xxhash-wasm 64-bit Raw  |  xxhash-wasm 64-bit |
 | ------------------------: | ----------------------- | ------------------- |
@@ -283,7 +356,7 @@ improvements over the string-hashing API, particularly for smaller inputs:
 | 10,000 bytes              | ***1,079,866 ops/sec*** | 940,350 ops/sec     |
 | 100,000 bytes             | ***113,350 ops/sec***   | 98,959 ops/sec      |
 | 1,000,000 bytes           | ***9,779 ops/sec***     | 8,632 ops/sec       |
-| 10,000,000 bytes          | ***563 ops/sec***       | 444 ops/sec         | 
+| 10,000,000 bytes          | ***563 ops/sec***       | 444 ops/sec         |
 | 100,000,000 bytes         | ***43.77 ops/sec***     | 34.56 ops/sec       |
 
 ### Bundle size
@@ -301,9 +374,11 @@ minified versions. *Lower is better*.
 [actions-nodejs-badge]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml/badge.svg
 [actions-nodejs-link]: https://github.com/jungomi/xxhash-wasm/actions/workflows/nodejs.yml
 [benchmarkjs]: https://benchmarkjs.com/
+[bigint-mdn]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt
 [cuint]: https://github.com/pierrec/js-cuint
 [npm-badge]: https://img.shields.io/npm/v/xxhash-wasm.svg?style=flat-square
 [npm-link]: https://www.npmjs.com/package/xxhash-wasm
+[textencoder-encodeinto-mdn]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto
 [travis]: https://travis-ci.org/jungomi/xxhash-wasm
 [travis-badge]: https://img.shields.io/travis/jungomi/xxhash-wasm/master.svg?style=flat-square
 [unpkg]: https://unpkg.com/
