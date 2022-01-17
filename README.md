@@ -3,6 +3,12 @@
 [![Node.js][actions-nodejs-badge]][actions-nodejs-link]
 [![npm][npm-badge]][npm-link]
 
+🚨 ***`v1.0.0` has just been released with an up to 3-4x performance
+improvement and a streaming API. There are some breaking changes and
+[new engine requirements](#engine-requirements). For details see the
+[`v1.0.0` release notes][release-notes-v1.0.0], which can also be found in the
+[CHANGELOG.md](CHANGELOG.md).***
+
 A WebAssembly implementation of [xxHash][xxhash], a fast non-cryptographic hash
 algorithm. It can be called seamlessly from JavaScript. You can use it like any
 other JavaScript library but still get the benefits of WebAssembly, no special
@@ -378,6 +384,7 @@ minified versions. *Lower is better*.
 [cuint]: https://github.com/pierrec/js-cuint
 [npm-badge]: https://img.shields.io/npm/v/xxhash-wasm.svg?style=flat-square
 [npm-link]: https://www.npmjs.com/package/xxhash-wasm
+[release-notes-v1.0.0]: https://github.com/jungomi/xxhash-wasm/releases/tag/v1.0.0
 [textencoder-encodeinto-mdn]: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto
 [travis]: https://travis-ci.org/jungomi/xxhash-wasm
 [travis-badge]: https://img.shields.io/travis/jungomi/xxhash-wasm/master.svg?style=flat-square
