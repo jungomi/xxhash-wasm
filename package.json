@@ -1,6 +1,6 @@
 {
   "name": "xxhash-wasm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A WebAssembly implementation of xxHash",
   "type": "module",
   "main": "./cjs/xxhash-wasm.cjs",

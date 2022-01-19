@@ -4,6 +4,10 @@ This changelog keeps all release notes in one place and mirrors the release
 notes from the [GitHub releases][github-releases], except for older versions,
 where no GitHub releases had been created.
 
+## v1.0.1
+
+- Export data types separately + fixed bigint data type (#28)
+
 ## v1.0.0
 
 This big release includes an up to a 3-4x performance improvement in most cases and a new streaming API similar to Node's built-in `crypto` API. To fully utilise the performance improvements, there are some breaking changes in the API and newer engine requirements.
