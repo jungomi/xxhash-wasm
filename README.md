@@ -245,22 +245,22 @@ Same as `h32` but with a `Uint8Array` as input instead of a `string`.
 ### h64
 
 ```typescript
-h64(input: string, [seed: BigInt]): BigInt
+h64(input: string, [seed: bigint]): bigint
 ```
 
 Generate a 64-bit hash of the UTF-8 encoded bytes of `input`. The optional
 `seed` is a `u64` provided as a [BigInt][bigint-mdn].
 
-Returns a `u64` [`BigInt`][bigint-mdn] containing the hash value.
+Returns a `u64` `bigint` containing the hash value.
 
 ```typescript
-h64ToString(input: string, [seed: BigInt]): string
+h64ToString(input: string, [seed: bigint]): string
 ```
 
 Same as `h64`, but returning a zero-padded hex string.
 
 ```typescript
-h64Raw(input: Uint8Array, [seed: BigInt]): BigInt
+h64Raw(input: Uint8Array, [seed: bigint]): bigint
 ```
 
 Same as `h64` but with a `Uint8Array` as input instead of a `string`.
@@ -268,8 +268,8 @@ Same as `h64` but with a `Uint8Array` as input instead of a `string`.
 ### Streaming
 
 ```typescript
-type Hash<T> {
-  update(input: string | Uint8Array): Hash<T>;
+type XXHash<T> {
+  update(input: string | Uint8Array): XXHash<T>;
   digest(): T
 }
 ```
@@ -279,16 +279,16 @@ The streaming API mirrors Node's built-in `crypto.createHash`, providing
 value, respectively.
 
 ```typescript
-create32([seed: number]): Hash<number>
+create32([seed: number]): XXHash<number>
 ```
 
-Create a 32-bit hash for streaming applications. See `Hash<T>` below.
+Create a 32-bit hash for streaming applications.
 
 ```typescript
-create64([seed: BigInt]): Hash<BigInt>
+create64([seed: bigint]): XXHash<bigint>
 ```
 
-Create a 64-bit hash for streaming applications. See `Hash<T>` below.
+Create a 64-bit hash for streaming applications.
 
 ## Comparison to [xxhashjs][xxhashjs]
 
