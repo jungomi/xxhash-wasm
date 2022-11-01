@@ -6,6 +6,7 @@
   "main": "./cjs/xxhash-wasm.cjs",
   "module": "./esm/xxhash-wasm.js",
   "exports": {
+    "types": "./types.d.ts",
     "import": "./esm/xxhash-wasm.js",
     "require": "./cjs/xxhash-wasm.cjs"
   },
