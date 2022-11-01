@@ -41,15 +41,15 @@ __metadata:
   resolution: "xxhash-wasm-bench@workspace:."
   dependencies:
     benchmark: ^2.1.4
-    xxhash-wasm: ^1.0.0
+    xxhash-wasm: ^1.0.1
     xxhashjs: ^0.2.2
   languageName: unknown
   linkType: soft
 
-"xxhash-wasm@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "xxhash-wasm@npm:1.0.0"
-  checksum: 392c37ccc349ec7a384f434fc97eefdc67b318a4033eb97fbb6086e05dd90bb76827ba236b89bb494e08fd4ecd0c4104f91eb17840a175a2d636837a627292df
+"xxhash-wasm@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "xxhash-wasm@npm:1.0.1"
+  checksum: beb7677772724508c6ffde7924c0c8b3b879337d1d1598563af09e87befc6a335015bec0fa41873cc27d4745f32dea19d20f9c606ea71d29e1c949e8a13d5c24
   languageName: node
   linkType: hard
 

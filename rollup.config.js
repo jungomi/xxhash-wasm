@@ -1,9 +1,13 @@
 import { readFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import nodeResolve from "rollup-plugin-node-resolve";
 import babel from "rollup-plugin-babel";
 import { terser } from "rollup-plugin-terser";
 import replace from "rollup-plugin-replace";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const wasmBytes = Array.from(
   readFileSync(resolve(__dirname, "src/xxhash.wasm"))

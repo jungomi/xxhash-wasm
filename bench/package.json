@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "benchmark": "^2.1.4",
-    "xxhash-wasm": "^1.0.0",
+    "xxhash-wasm": "^1.0.1",
     "xxhashjs": "^0.2.2"
   }
 }
