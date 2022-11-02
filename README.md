@@ -3,8 +3,8 @@
 [![Node.js][actions-nodejs-badge]][actions-nodejs-link]
 [![npm][npm-badge]][npm-link]
 
-🚨 ***`v1.0.0` has just been released with an up to 3-4x performance
-improvement and a streaming API. There are some breaking changes and
+🚨 *** The `v1.0.0` release brought an up to 3-4x performance
+improvement and a streaming API. There were some breaking changes and
 [new engine requirements](#engine-requirements). For details see the
 [`v1.0.0` release notes][release-notes-v1.0.0], which can also be found in the
 [CHANGELOG.md](CHANGELOG.md).***
