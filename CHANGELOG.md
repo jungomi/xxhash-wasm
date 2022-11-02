@@ -4,6 +4,10 @@ This changelog keeps all release notes in one place and mirrors the release
 notes from the [GitHub releases][github-releases], except for older versions,
 where no GitHub releases had been created.
 
+## v1.0.2
+
+- Add support for Typescript's `nodenext` module resolution (#33)
+
 ## v1.0.1
 
 - Export data types separately + fixed bigint data type (#28)
