@@ -77,5 +77,6 @@
         "maxSize": "2.3kb"
       }
     ]
-  }
+  },
+  "packageManager": "yarn@3.2.4"
 }
