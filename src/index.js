@@ -111,65 +111,125 @@ async function xxhash() {
     return i & u64Max;
   }
 
+  function pass(i) {
+    return i;
+  }
+
   const encoder = new TextEncoder();
   const defaultSeed = 0;
   const defaultBigSeed = 0n;
 
-  function h32(str, seed = defaultSeed) {
+  function h32Signed(str, seed) {
+    if (seed === undefined) {
+      seed = defaultSeed;
+    }
+
     // https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder/encodeInto#buffer_sizing
     // By sizing the buffer to 3 * string-length we guarantee that the buffer
     // will be appropriately sized for the utf-8 encoding of the string.
     growMemory(str.length * 3, 0);
-    return forceUnsigned32(
-      xxh32(0, encoder.encodeInto(str, memory).written, seed)
+    return xxh32(0, encoder.encodeInto(str, memory).written, seed);
+  }
+
+  function h32Unsigned(str, seed) {
+    return forceUnsigned32(h32Signed(str, seed));
+  }
+
+  function h64Signed(str, seed) {
+    if (seed === undefined) {
+      seed = defaultBigSeed;
+    }
+
+    growMemory(str.length * 3, 0);
+    return xxh64(0, encoder.encodeInto(str, memory).written, seed);
+  }
+
+  function h64Unsigned(str, seed) {
+    return forceUnsigned64(h64Signed(str, seed));
+  }
+
+  function h32RawSigned(inputBuffer, seed) {
+    if (seed === undefined) {
+      seed = defaultSeed;
+    }
+
+    growMemory(inputBuffer.byteLength, 0);
+    memory.set(inputBuffer);
+    return xxh32(0, inputBuffer.byteLength, seed);
+  }
+
+  function h64RawSigned(inputBuffer, seed) {
+    if (seed === undefined) {
+      seed = defaultBigSeed;
+    }
+
+    growMemory(inputBuffer.byteLength, 0);
+    memory.set(inputBuffer);
+    return xxh64(0, inputBuffer.byteLength, seed);
+  }
+
+  function create32(finalize, seed) {
+    if (seed === undefined) {
+      seed = defaultSeed;
+    }
+
+    return create(
+      XXH32_STATE_SIZE_BYTES,
+      seed,
+      init32,
+      update32,
+      digest32,
+      finalize
     );
   }
 
-  function h64(str, seed = defaultBigSeed) {
-    growMemory(str.length * 3, 0);
-    return forceUnsigned64(
-      xxh64(0, encoder.encodeInto(str, memory).written, seed)
+  function create64(finalize, seed) {
+    if (seed === undefined) {
+      seed = defaultBigSeed;
+    }
+
+    return create(
+      XXH64_STATE_SIZE_BYTES,
+      seed,
+      init64,
+      update64,
+      digest64,
+      finalize
     );
   }
 
   return {
-    h32,
-    h32ToString(str, seed = defaultSeed) {
-      return h32(str, seed).toString(16).padStart(8, "0");
+    h32: h32Unsigned,
+    h32ToString(str, seed) {
+      return h32Unsigned(str, seed).toString(16).padStart(8, "0");
     },
-    h32Raw(inputBuffer, seed = defaultSeed) {
-      growMemory(inputBuffer.byteLength, 0);
-      memory.set(inputBuffer);
-      return forceUnsigned32(xxh32(0, inputBuffer.byteLength, seed));
+    h32Raw(inputBuffer, seed) {
+      return forceUnsigned32(h32RawSigned(inputBuffer, seed));
     },
-    create32(seed = defaultSeed) {
-      return create(
-        XXH32_STATE_SIZE_BYTES,
-        seed,
-        init32,
-        update32,
-        digest32,
-        forceUnsigned32
-      );
+    create32(seed) {
+      return create32(forceUnsigned32, seed);
     },
-    h64,
-    h64ToString(str, seed = defaultBigSeed) {
-      return h64(str, seed).toString(16).padStart(16, "0");
+    h64: h64Unsigned,
+    h64ToString(str, seed) {
+      return h64Unsigned(str, seed).toString(16).padStart(16, "0");
     },
-    h64Raw(inputBuffer, seed = defaultBigSeed) {
-      growMemory(inputBuffer.byteLength, 0);
-      memory.set(inputBuffer);
-      return forceUnsigned64(xxh64(0, inputBuffer.byteLength, seed));
+    h64Raw(inputBuffer, seed) {
+      return forceUnsigned64(h64RawSigned(inputBuffer, seed));
     },
-    create64(seed = defaultBigSeed) {
-      return create(
-        XXH64_STATE_SIZE_BYTES,
-        seed,
-        init64,
-        update64,
-        digest64,
-        forceUnsigned64
-      );
+    create64(seed) {
+      return create64(forceUnsigned64, seed);
+    },
+    signed: {
+      h32: h32Signed,
+      h32Raw: h32RawSigned,
+      create32(seed) {
+        return create32(pass, seed);
+      },
+      h64: h64Signed,
+      h64Raw: h64RawSigned,
+      create64(seed) {
+        return create64(pass, seed);
+      },
     },
   };
 }
