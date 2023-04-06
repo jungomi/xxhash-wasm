@@ -1,0 +1,28 @@
+{
+  "exclude": "node_modules/**",
+  "minify": true,
+  "sourceMaps": true,
+  "jsc": {
+    "minify": {
+      "sourceMap": true,
+      "compress": {
+        "const_to_let": false
+      },
+      "mangle": {
+        "toplevel": true
+      }
+    }
+  },
+  "env": {
+    "targets": {
+      "chrome": 85,
+      "edge": 79,
+      "firefox": 79,
+      "safari": 15,
+      "node": 18
+    },
+    "exclude": [
+      "transform-parameters"
+    ]
+  }
+}
