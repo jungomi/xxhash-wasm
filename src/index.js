@@ -44,6 +44,7 @@ async function xxhash() {
   } = await WebAssembly.instantiate(wasmBytes);
 
   let memory = new Uint8Array(mem.buffer);
+  let temp = new Uint8Array(memory.length);
   // Grow the wasm linear memory to accommodate length + offset bytes
   function growMemory(length, offset) {
     if (mem.buffer.byteLength < length + offset) {
@@ -56,6 +57,7 @@ async function xxhash() {
       // need to replace our view over it with a new one over the new backing
       // ArrayBuffer.
       memory = new Uint8Array(mem.buffer);
+      temp = new Uint8Array(memory.length);
     }
   }
 
@@ -67,13 +69,15 @@ async function xxhash() {
     growMemory(size);
 
     // We'll hold our hashing state in this closure.
-    const state = new Uint8Array(size);
-    memory.set(state);
+    temp.fill(0, 0, size); // But first we clear the "pseudo closure" we reuse
+    const state = temp.subarray(0, size); // Then we define the closure
+    memory.set(state); // Then we use it to clear the recycled memory
     init(0, seed);
 
     // Each time we interact with wasm, it may have mutated our state so we'll
-    // need to read it back into our closed copy.
-    state.set(memory.slice(0, size));
+    // need to read it back into our closed copy but we can use a subarray to set the state.
+    // When we set a TypedArray with another one, we don't have to use a copy (slice)
+    state.set(memory.subarray(0, size));
 
     return {
       update(input) {
@@ -89,7 +93,7 @@ async function xxhash() {
           length = input.byteLength;
         }
         update(0, size, length);
-        state.set(memory.slice(0, size));
+        state.set(memory.subarray(0, size));
         return this;
       },
       digest() {
