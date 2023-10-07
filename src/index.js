@@ -73,7 +73,7 @@ async function xxhash() {
 
     // Each time we interact with wasm, it may have mutated our state so we'll
     // need to read it back into our closed copy.
-    state.set(memory.slice(0, size));
+    state.set(memory.subarray(0, size));
 
     return {
       update(input) {
@@ -89,13 +89,21 @@ async function xxhash() {
           length = input.byteLength;
         }
         update(0, size, length);
-        state.set(memory.slice(0, size));
+        state.set(memory.subarray(0, size));
         return this;
       },
       digest() {
         memory.set(state);
         return finalize(digest(0));
       },
+      reset() {
+        // Perform the same actions that when it is created
+        growMemory(size);
+        state.fill(0);
+        memory.set(state);
+        init(0, seed);
+        state.set(memory.subarray(0, size));
+      }
     };
   }
 
