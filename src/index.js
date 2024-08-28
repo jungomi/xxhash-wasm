@@ -142,6 +142,11 @@ async function xxhash() {
       memory.set(inputBuffer);
       return forceUnsigned32(xxh32(0, inputBuffer.byteLength, seed));
     },
+    h32Buffer(inputBuffer, seed = defaultSeed) {
+      growMemory(inputBuffer.byteLength, 0);
+      inputBuffer.copy(memory);
+      return forceUnsigned32(xxh32(0, inputBuffer.byteLength, seed));
+    },
     create32(seed = defaultSeed) {
       return create(
         XXH32_STATE_SIZE_BYTES,
@@ -159,6 +164,11 @@ async function xxhash() {
     h64Raw(inputBuffer, seed = defaultBigSeed) {
       growMemory(inputBuffer.byteLength, 0);
       memory.set(inputBuffer);
+      return forceUnsigned64(xxh64(0, inputBuffer.byteLength, seed));
+    },
+    h64Buffer(inputBuffer, seed = defaultBigSeed) {
+      growMemory(inputBuffer.byteLength, 0);
+      inputBuffer.copy(memory);
       return forceUnsigned64(xxh64(0, inputBuffer.byteLength, seed));
     },
     create64(seed = defaultBigSeed) {
