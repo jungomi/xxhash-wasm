@@ -70,6 +70,20 @@ yarn add xxhash-wasm
 
 The global `xxhash` will be available.
 
+### Cloudflare Workers
+
+If you are using [Cloudflare
+Workers](https://developers.cloudflare.com/workers/) (workerd) you can use the installed 
+npm package as is. The `xxhash-wasm` package is compatible with Cloudflare Workers.
+
+```javascript
+import xxhash from "xxhash-wasm";
+```
+
+Importing it will pick the correct file base on the [conditional
+import](https://developers.cloudflare.com/workers/wrangler/bundling/#conditional-exports)
+from the package.json.
+
 ## Usage
 
 The WebAssembly is contained in the JavaScript bundle, so you don't need to
