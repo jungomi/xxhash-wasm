@@ -7,4 +7,16 @@ node_modules
 logs
 *.log
 npm-debug.log*
-.yarn/cache
+
+# Yarn
+# From: https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+# Don't care about zero-install, that was the default (or only way) at the first release of yarn v2,
+# but I never liked it and they now realised that it's probably not great to have the cache
+# committed in the Git repo, so get rid of all of that.
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
