@@ -4,6 +4,27 @@ This changelog keeps all release notes in one place and mirrors the release
 notes from the [GitHub releases][github-releases], except for older versions,
 where no GitHub releases had been created.
 
+## v1.1.0
+
+### Cloudflare Workers Support
+
+[Cloudflare Workers](https://developers.cloudflare.com/workers/) disallow loading WebAssembly modules from an
+`ArrayBuffer` for security reasons.
+
+They support [conditional import](https://developers.cloudflare.com/workers/wrangler/bundling/#conditional-exports) from
+the `workerd` field in `package.json`, therefore `xxhash-wasm` now includes an additional `workerd` package that
+includes the WASM in a separate file. (#51)
+
+You can install it with npm as usual and import it with:
+
+```javascript
+import xxhash from "xxhash-wasm";
+```
+
+### Performance
+
+- Set state with `.subarray()` over `.slice()` to avoid unnecessary copy that will be discarded right afterwards (#52)
+
 ## v1.0.2
 
 - Add support for Typescript's `nodenext` module resolution (#33)
