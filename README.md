@@ -23,6 +23,7 @@ setup needed.
   * [From Unpkg](#from-unpkg)
     * [ES Modules](#es-modules)
     * [UMD build](#umd-build)
+  * [Cloudflare Workers](#cloudflare-workers)
 * [Usage](#usage)
   * [Streaming Example](#streaming-example)
   * [Node](#node)
@@ -72,8 +73,7 @@ The global `xxhash` will be available.
 
 ### Cloudflare Workers
 
-If you are using [Cloudflare
-Workers](https://developers.cloudflare.com/workers/) (workerd) you can use the installed 
+If you are using [Cloudflare Workers](https://developers.cloudflare.com/workers/) (workerd) you can use the installed
 npm package as is. The `xxhash-wasm` package is compatible with Cloudflare Workers.
 
 ```javascript
