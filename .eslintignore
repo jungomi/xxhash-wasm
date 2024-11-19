@@ -3,3 +3,4 @@ coverage
 cjs
 esm
 umd
+workerd

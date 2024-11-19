@@ -7,6 +7,7 @@
   "module": "./esm/xxhash-wasm.js",
   "exports": {
     "types": "./types.d.ts",
+    "workerd": "./workerd/xxhash-wasm.js",
     "import": "./esm/xxhash-wasm.js",
     "require": "./cjs/xxhash-wasm.cjs"
   },
@@ -21,6 +22,7 @@
     "cjs",
     "esm",
     "umd",
+    "workerd",
     "types.d.ts"
   ],
   "keywords": [
@@ -58,6 +60,7 @@
     "prettier": "^2.8.7",
     "rimraf": "^4.4.1",
     "rollup": "^3.20.2",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-swc3": "^0.8.1"
