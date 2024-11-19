@@ -1,6 +1,0 @@
-bench/node_modules
-coverage
-cjs
-esm
-umd
-workerd

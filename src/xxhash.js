@@ -40,7 +40,7 @@ export function xxhash(instance) {
     if (mem.buffer.byteLength < length + offset) {
       const extraPages = Math.ceil(
         // Wasm pages are spec'd to 64K
-        (length + offset - mem.buffer.byteLength) / (64 * 1024)
+        (length + offset - mem.buffer.byteLength) / (64 * 1024),
       );
       mem.grow(extraPages);
       // After growing, the original memory's ArrayBuffer is detached, so we'll
@@ -112,14 +112,14 @@ export function xxhash(instance) {
     // will be appropriately sized for the utf-8 encoding of the string.
     growMemory(str.length * 3, 0);
     return forceUnsigned32(
-      xxh32(0, encoder.encodeInto(str, memory).written, seed)
+      xxh32(0, encoder.encodeInto(str, memory).written, seed),
     );
   }
 
   function h64(str, seed = defaultBigSeed) {
     growMemory(str.length * 3, 0);
     return forceUnsigned64(
-      xxh64(0, encoder.encodeInto(str, memory).written, seed)
+      xxh64(0, encoder.encodeInto(str, memory).written, seed),
     );
   }
 
@@ -140,7 +140,7 @@ export function xxhash(instance) {
         init32,
         update32,
         digest32,
-        forceUnsigned32
+        forceUnsigned32,
       );
     },
     h64,
@@ -159,7 +159,7 @@ export function xxhash(instance) {
         init64,
         update64,
         digest64,
-        forceUnsigned64
+        forceUnsigned64,
       );
     },
   };

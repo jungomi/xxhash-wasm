@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const wasmBytes = Array.from(
-  readFileSync(resolve(__dirname, "src/xxhash.wasm"))
+  readFileSync(resolve(__dirname, "src/xxhash.wasm")),
 );
 
 const output = [
@@ -33,7 +33,7 @@ const replacements = {
 };
 
 const swc_config = JSON.parse(
-  readFileSync(resolve(__dirname, ".swcrc"), "utf-8")
+  readFileSync(resolve(__dirname, ".swcrc"), "utf-8"),
 );
 
 const plugins = [
